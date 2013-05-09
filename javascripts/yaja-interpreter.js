@@ -70,7 +70,6 @@ Interpreter.prototype.run = function (program, maxInstructions) {
   var out = this.out,
       code = this._parse(program),
       height = code.length,
-      width = height == 0 ? 0 : code[0].length,
       i = 0,
       j = 0,
       currentDirection = DOWN,
@@ -80,99 +79,104 @@ Interpreter.prototype.run = function (program, maxInstructions) {
       currentStorageSize = currentStorage.length,
       instructionCount = 0;
   this.buffer = [];
-  if (height == 0 || width == 0) return;
+  if (height == 0) return;
   while (maxInstructions === undefined ||
          instructionCount <= maxInstructions) {
-    var instruction = code[i][j],
-        commandCode = instruction[0],
-        movement = MOVEMENTS[instruction[1]],
-        direction = movement & DIRECTION,
-        speed = movement & SPEED,
-        argumentCode = instruction[2],
-        arity = COMMAND_ARITY[commandCode],
-        first,
-        second;
-    // Update current direction
-    if ((movement & INERTIA) == FORCE) {
-      // Simple movement
-      currentDirection = direction;
-      currentSpeed = speed;
-    } else if (movement != SAME) {
-      var d = currentDirection;
-      if (movement == REFLECT ||
-          (movement == SAME_V_REFLECT_H && (d == RIGHT || d == LEFT)) ||
-          (movement == REFLECT_V_SAME_H && (d == UP || d == DOWN))) {
+    var row = code[i];
+        instruction = row[j];
+    if (instruction !== undefined) {
+      ++instructionCount;
+      var commandCode = instruction[0],
+          movement = MOVEMENTS[instruction[1]],
+          direction = movement & DIRECTION,
+          speed = movement & SPEED,
+          argumentCode = instruction[2],
+          arity = COMMAND_ARITY[commandCode],
+          first,
+          second;
+      // Update current direction
+      if ((movement & INERTIA) == FORCE) {
+        // Simple movement
+        currentDirection = direction;
+        currentSpeed = speed;
+      } else if (movement != SAME) {
+        var d = currentDirection;
+        if (movement == REFLECT ||
+            (movement == SAME_V_REFLECT_H && (d == RIGHT || d == LEFT)) ||
+            (movement == REFLECT_V_SAME_H && (d == UP || d == DOWN))) {
+          currentDirection = ~currentDirection & DIRECTION;
+        }
+      }
+      // Check if current storage has enough values
+      if (currentStorageSize < 2 &&
+          (arity == 2 || currentStorageSize < 1 && arity == 1)) {
+        commandCode = NULL;
         currentDirection = ~currentDirection & DIRECTION;
       }
+      // Get values
+      if (arity >= 1) {
+        if (commandCode != DUPLICATE) first = currentStorage.pop();
+        if (arity == 2) second = currentStorage.pop();
+      }
+      // Perform command
+      switch (commandCode) {
+        // Arithmetic commands
+        case ADD:      currentStorage.push(second + first); break;
+        case MULTIPLY: currentStorage.push(second * first); break;
+        case DIVIDE:   currentStorage.push(~~(second / first)); break;
+        case SUBTRACT: currentStorage.push(second - first); break;
+        case MODULO:   currentStorage.push(second % first); break;
+        // Storage commands
+        case POP:
+          if (argumentCode == INTEGER) {
+            out(first);
+          } else if (argumentCode == CHARACTER) {
+            out(String.fromCharCode(first));
+          } else {
+            // Invalid argument; discard value
+          }
+          break;
+        case PUSH:
+          var value;
+          if (argumentCode == INTEGER) {
+            value = ~~window.prompt('Enter an integer:');
+          } else if (argumentCode == CHARACTER) {
+            value = window.prompt('Enter a character:').charCodeAt(0);
+          } else {
+            value = VALUES[argumentCode];
+          }
+          currentStorage.push(value);
+          break;
+        case DUPLICATE:
+          currentStorage.duplicate();
+          break;
+        case SWAP:
+          currentStorage.push(first);
+          currentStorage.push(second);
+          break;
+        // Miscellaneous commands
+        case SELECT:
+          currentStorage = storage[argumentCode];
+          break;
+        case TRANSFER:
+          storage[argumentCode].push(first);
+          break;
+        case COMPARE:
+          currentStorage.push(second >= first ? 1 : 0);
+          break;
+        case DECIDE:
+          if (first == 0) currentDirection = ~currentDirection & DIRECTION;
+          break;
+        case TERMINATE:
+          return;
+        case NULL: default:
+          break;
+      }
+      currentStorageSize = currentStorage.length;
     }
-    // Check if current storage has enough values
-    if (currentStorageSize < 2 &&
-        (arity == 2 || currentStorageSize < 1 && arity == 1)) {
-      commandCode = NULL;
-      currentDirection = ~currentDirection & DIRECTION;
-    }
-    // Get values
-    if (arity >= 1) {
-      if (commandCode != DUPLICATE) first = currentStorage.pop();
-      if (arity == 2) second = currentStorage.pop();
-    }
-    // Perform command
-    switch (commandCode) {
-      // Arithmetic commands
-      case ADD:      currentStorage.push(second + first); break;
-      case MULTIPLY: currentStorage.push(second * first); break;
-      case DIVIDE:   currentStorage.push(~~(second / first)); break;
-      case SUBTRACT: currentStorage.push(second - first); break;
-      case MODULO:   currentStorage.push(second % first); break;
-      // Storage commands
-      case POP:
-        if (argumentCode == INTEGER) {
-          out(first);
-        } else if (argumentCode == CHARACTER) {
-          out(String.fromCharCode(first));
-        } else {
-          // Invalid argument; discard value
-        }
-        break;
-      case PUSH:
-        var value;
-        if (argumentCode == INTEGER) {
-          value = ~~window.prompt('Enter an integer:');
-        } else if (argumentCode == CHARACTER) {
-          value = window.prompt('Enter a character:').charCodeAt(0);
-        } else {
-          value = VALUES[argumentCode];
-        }
-        currentStorage.push(value);
-        break;
-      case DUPLICATE:
-        currentStorage.duplicate();
-        break;
-      case SWAP:
-        currentStorage.push(first);
-        currentStorage.push(second);
-        break;
-      // Miscellaneous commands
-      case SELECT:
-        currentStorage = storage[argumentCode];
-        break;
-      case TRANSFER:
-        storage[argumentCode].push(first);
-        break;
-      case COMPARE:
-        currentStorage.push(second >= first ? 1 : 0);
-        break;
-      case DECIDE:
-        if (first == 0) currentDirection = ~currentDirection & DIRECTION;
-        break;
-      case TERMINATE:
-        return;
-      case NULL: default:
-        break;
-    }
-    currentStorageSize = currentStorage.length;
     // Move to the next instruction
     var inc = currentSpeed == ONE ? 1 : 2,
+        width = row.length,
         x;
     switch (currentDirection) {
       case UP:    x = i - inc; i = x < 0 ? height - 1 : x; break;
@@ -180,30 +184,21 @@ Interpreter.prototype.run = function (program, maxInstructions) {
       case RIGHT: x = j + inc; j = x >= width ? 0 : x; break;
       case LEFT:  x = j - inc; j = x < 0 ? width - 1 : x; break;
     }
-    if (instruction !== NULL_INSTRUCTION) ++instructionCount;
   }
 };
 
 Interpreter.prototype._parse = function (program) {
   var lines = program.split('\n')
       height = lines.length,
-      maxWidth = 0,
       rows = [];
   for (var i = 0; i < height; ++i) {
     var line = lines[i],
         width = line.length,
         row = [];
-    if (width > maxWidth) maxWidth = width;
     for (var j = 0; j < width; ++j) {
       row.push(this._makeInstruction(line.charCodeAt(j)));
     }
     rows.push(row);
-  }
-  for (var i = 0; i < height; ++i) {
-    var row = rows[i];
-    for (var j = row.length; j < maxWidth; ++j) {
-      row.push(NULL_INSTRUCTION);
-    }
   }
   return rows;
 };
