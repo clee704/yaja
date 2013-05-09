@@ -1,0 +1,12 @@
+h1 {
+  font-size: 30px;
+  margin: 10px 0;
+}
+
+textarea {
+  white-space: nowrap;
+}
+
+.yaja-controls {
+  margin-bottom: 10px;
+}
