@@ -2,10 +2,11 @@ var yaja = typeof yaja === 'undefined' ? {} : yaja;
 (function (window, yaja, undefined) {
 
 // Storage types
-function Stack() {}
-Stack.prototype = new Array;
-Stack.prototype.constructor = Stack;
+var Stack = Array;
 
+// This method is also added to Array, since Stack is just an alias to Array.
+// It may be an undesirable side-effect. However, performance gain is
+// significant (30-40% faster) compared to inheriting Array.
 Stack.prototype.duplicate = function () {
   this.push(this[this.length - 1]);
 };
