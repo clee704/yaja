@@ -1,7 +1,6 @@
 var yaja = typeof yaja === 'undefined' ? {} : yaja;
 (function (window, yaja, undefined) {
 
-// Storage types
 var Stack = Array;
 
 // This method is also added to Array, since Stack is just an alias to Array.
