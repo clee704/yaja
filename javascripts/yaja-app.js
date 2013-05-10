@@ -21,7 +21,9 @@ function App(config) {
 App.prototype.run = function () {
   this._output.value = '';
   this._interpreter.setProgram(this._input.value);
-  this._interpreter.run();
+  var interpreter = this._interpreter,
+      loop = function () { if (!interpreter.run(1000)) setTimeout(loop, 0); };
+  loop();
 };
 
 App.prototype._bindListeners = function () {

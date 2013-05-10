@@ -78,7 +78,8 @@ Interpreter.prototype.setProgram = function (program) {
     speed: ONE,
     storage: this._createStorage(),
     storageIndex: 0,
-    instructionCount: 0
+    instructionCount: 0,
+    terminated: code.length == 0
   };
 };
 
@@ -88,7 +89,7 @@ Interpreter.prototype.run = function (maxInstructions) {
       data = process.storage[process.storageIndex],
       index = process.instructionIndex,
       currentInstructionCount = 0;
-  if (process.height == 0) return;
+  if (process.terminated) return true;
   while (maxInstructions === undefined ||
          currentInstructionCount <= maxInstructions) {
     var row = code[index[0]];
@@ -176,8 +177,9 @@ Interpreter.prototype.run = function (maxInstructions) {
           if (first == 0) process.direction = ~process.direction & DIRECTION;
           break;
         case TERMINATE:
+          process.terminated = true;
           this._flush();
-          return;
+          return true;
         case NULL: default:
           break;
       }
