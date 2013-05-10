@@ -69,17 +69,15 @@ Interpreter.prototype.setOut = function (out, bufferingMode) {
 };
 
 Interpreter.prototype.setProgram = function (program) {
-  var code = this._parse(program),
-      storage = this._createStorage();
+  var code = this._parse(program);
   this._process = {
     code: code,
     height: code.length,
     instructionIndex: [0, 0],
     direction: DOWN,
     speed: ONE,
-    storage: storage,
-    data: storage[0],
-    dataSize: storage[0].length,
+    storage: this._createStorage(),
+    storageIndex: 0,
     instructionCount: 0
   };
 };
@@ -87,7 +85,7 @@ Interpreter.prototype.setProgram = function (program) {
 Interpreter.prototype.run = function (maxInstructions) {
   var process = this._process,
       code = process.code,
-      data = process.data,
+      data = process.storage[process.storageIndex],
       index = process.instructionIndex,
       currentInstructionCount = 0;
   if (process.height == 0) return;
@@ -118,8 +116,8 @@ Interpreter.prototype.run = function (maxInstructions) {
         }
       }
       // Check if current storage has enough values
-      if (process.dataSize < 2 &&
-          (arity == 2 || process.dataSize < 1 && arity == 1)) {
+      if (data.length < 2 &&
+          (arity == 2 || data.length < 1 && arity == 1)) {
         commandCode = NULL;
         process.direction = ~process.direction & DIRECTION;
       }
@@ -166,7 +164,7 @@ Interpreter.prototype.run = function (maxInstructions) {
           break;
         // Miscellaneous commands
         case SELECT:
-          data = process.data = process.storage[argumentCode];
+          data = process.storage[process.storageIndex = argumentCode];
           break;
         case TRANSFER:
           process.storage[argumentCode].push(first);
@@ -183,7 +181,6 @@ Interpreter.prototype.run = function (maxInstructions) {
         case NULL: default:
           break;
       }
-      process.dataSize = data.length;
       ++process.instructionCount;
       ++currentInstructionCount;
     }
