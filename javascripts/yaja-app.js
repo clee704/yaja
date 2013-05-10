@@ -15,14 +15,47 @@ function App(config) {
     output.value += str;
     output.scrollTop = output.scrollHeight;
   }});
+  this._pauseButton = $('.yaja-pause');
+  this._paused = false;
+  this._currentLoopId = 0;
   this._bindListeners();
 }
 
 App.prototype.run = function () {
-  this._output.value = '';
+  this.clearOutput();
   this._interpreter.setProgram(this._input.value);
-  var interpreter = this._interpreter,
-      loop = function () { if (!interpreter.run(1000)) setTimeout(loop, 0); };
+  this._pauseButton.attr('disabled', null);
+  this.pause(false);
+};
+
+App.prototype.pause = function (paused) {
+  if (this._pauseButton.attr('disabled')) return;
+  ++this._currentLoopId;  // Stop current loop
+  this.paused = paused === undefined ? !this.paused : paused;
+  if (this.paused) {
+    this._pauseButton.find('span').text('Resume');
+  } else {
+    this._pauseButton.find('span').text('Pause');
+    this._resume();
+  }
+};
+
+App.prototype.clearOutput = function () {
+  this._output.value = '';
+};
+
+App.prototype._resume = function () {
+  var self = this,
+      interpreter = this._interpreter,
+      currentLoopId = ++this._currentLoopId,
+      loop = function () {
+        if (currentLoopId != self._currentLoopId) return;
+        if (interpreter.run(10000)) {  // Terminated
+          self._pauseButton.attr('disabled', 'disabled');
+        } else {
+          setTimeout(loop, 0);
+        }
+      };
   loop();
 };
 
@@ -32,15 +65,26 @@ App.prototype._bindListeners = function () {
       actions = {
         "run": {
           func: function () { self.run(); },
-          htmlClass: '.yaja-run'
+          htmlClass: ".yaja-run"
+        },
+        "pause": {
+          func: function () { self.pause(); },
+          htmlClass: ".yaja-pause"
+        },
+        "clearOutput": {
+          func: function () { self.clearOutput(); },
+          htmlClass: ".yaja-clear-output"
         }
       };
   for (var name in actions) {
-    var act = actions[name];
-    $(act.htmlClass).click(act.func).attr('title', function () {
-      return $(this).text().trim() + ' [' + shortcuts[name] + ']';
-    });
-    $(window).add('textarea').bind('keydown', shortcuts[name], act.func);
+    var act = actions[name],
+        button = $(act.htmlClass).click(act.func);
+    if (shortcuts[name]) {
+      button.attr('title', function () {
+        return $(this).text().trim() + ' [' + shortcuts[name] + ']';
+      });
+      $(window).add('textarea').bind('keydown', shortcuts[name], act.func);
+    }
   }
 };
 
