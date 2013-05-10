@@ -220,7 +220,6 @@ Interpreter.prototype._makeInstruction = function (charCode) {
   // '가'.charCodeAt(0) == 0xac00
   // '힣'.charCodeAt(0) == 0xd7a3
   if (charCode < 0xac00 || charCode > 0xd7a3) return NULL_INSTRUCTION;
-  // ~~ (double bitwise NOT) is a fast alternative to Math.floor
   var x = charCode - 0xac00,
       argumentCode = x % 28,  // final (종성)
       y = ~~(x / 28),
