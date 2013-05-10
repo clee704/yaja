@@ -1,5 +1,5 @@
 var yaja = typeof yaja === 'undefined' ? {} : yaja;
-(function (window, yaja, $) {
+(function (window, yaja, $, undefined) {
 
 function App(config) {
   this.config = $.extend({
