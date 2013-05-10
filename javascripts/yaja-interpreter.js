@@ -72,15 +72,20 @@ Interpreter.prototype.setProgram = function (program) {
   var code = this._parse(program);
   this._process = {
     code: code,
-    height: code.length,
-    instructionIndex: [0, 0],
-    direction: DOWN,
-    speed: ONE,
-    storage: this._createStorage(),
-    storageIndex: 0,
-    instructionCount: 0,
-    terminated: code.length == 0
+    height: code.length
   };
+  this.reset();
+};
+
+Interpreter.prototype.reset = function () {
+  var process = this._process;
+  process.instructionIndex = [0, 0];
+  process.direction = DOWN;
+  process.speed = ONE;
+  process.storage = this._createStorage();
+  process.storageIndex = 0;
+  process.instructionCount = 0;
+  process.terminated = process.code.length == 0;
 };
 
 Interpreter.prototype.run = function (maxInstructions) {
