@@ -58,34 +58,44 @@ var NULL_INSTRUCTION = [NULL, 1, 0];
 
 function Interpreter() {
   var self = this;
-  this.out = function (c) { self.buffer.push(c) };
-  this.buffer = [];
+  this._buffer = [];
+  this._bufferingMode = 'line-bufferred';
+  this._out = {print: function () {}};
 }
 
-Interpreter.prototype.setOut = function (out) {
-  this.out = out;
+Interpreter.prototype.setOut = function (out, bufferingMode) {
+  this._out = out;
+  if (bufferingMode !== undefined) this._bufferingMode = bufferingMode;
 };
 
-Interpreter.prototype.run = function (program, maxInstructions) {
-  var out = this.out,
-      code = this._parse(program),
-      height = code.length,
-      i = 0,
-      j = 0,
-      currentDirection = DOWN,
-      currentSpeed = ONE,
-      storage = this._createStorage(),
-      currentStorage = storage[0],
-      currentStorageSize = currentStorage.length,
-      instructionCount = 0;
-  this.buffer = [];
-  if (height == 0) return;
+Interpreter.prototype.setProgram = function (program) {
+  var code = this._parse(program),
+      storage = this._createStorage();
+  this._process = {
+    code: code,
+    height: code.length,
+    instructionIndex: [0, 0],
+    direction: DOWN,
+    speed: ONE,
+    storage: storage,
+    data: storage[0],
+    dataSize: storage[0].length,
+    instructionCount: 0
+  };
+};
+
+Interpreter.prototype.run = function (maxInstructions) {
+  var process = this._process,
+      code = process.code,
+      data = process.data,
+      index = process.instructionIndex,
+      currentInstructionCount = 0;
+  if (process.height == 0) return;
   while (maxInstructions === undefined ||
-         instructionCount <= maxInstructions) {
-    var row = code[i];
-        instruction = row[j];
+         currentInstructionCount <= maxInstructions) {
+    var row = code[index[0]];
+        instruction = row[index[1]];
     if (instruction !== undefined) {
-      ++instructionCount;
       var commandCode = instruction[0],
           movement = MOVEMENTS[instruction[1]],
           direction = movement & DIRECTION,
@@ -97,41 +107,41 @@ Interpreter.prototype.run = function (program, maxInstructions) {
       // Update current direction
       if ((movement & INERTIA) == FORCE) {
         // Simple movement
-        currentDirection = direction;
-        currentSpeed = speed;
+        process.direction = direction;
+        process.speed = speed;
       } else if (movement != SAME) {
-        var d = currentDirection;
+        var d = process.direction;
         if (movement == REFLECT ||
             (movement == SAME_V_REFLECT_H && (d == RIGHT || d == LEFT)) ||
             (movement == REFLECT_V_SAME_H && (d == UP || d == DOWN))) {
-          currentDirection = ~currentDirection & DIRECTION;
+          process.direction = ~d & DIRECTION;
         }
       }
       // Check if current storage has enough values
-      if (currentStorageSize < 2 &&
-          (arity == 2 || currentStorageSize < 1 && arity == 1)) {
+      if (process.dataSize < 2 &&
+          (arity == 2 || process.dataSize < 1 && arity == 1)) {
         commandCode = NULL;
-        currentDirection = ~currentDirection & DIRECTION;
+        process.direction = ~process.direction & DIRECTION;
       }
       // Get values
       if (arity >= 1) {
-        if (commandCode != DUPLICATE) first = currentStorage.pop();
-        if (arity == 2) second = currentStorage.pop();
+        if (commandCode != DUPLICATE) first = data.pop();
+        if (arity == 2) second = data.pop();
       }
       // Perform command
       switch (commandCode) {
         // Arithmetic commands
-        case ADD:      currentStorage.push(second + first); break;
-        case MULTIPLY: currentStorage.push(second * first); break;
-        case DIVIDE:   currentStorage.push(~~(second / first)); break;
-        case SUBTRACT: currentStorage.push(second - first); break;
-        case MODULO:   currentStorage.push(second % first); break;
+        case ADD:      data.push(second + first); break;
+        case MULTIPLY: data.push(second * first); break;
+        case DIVIDE:   data.push(~~(second / first)); break;
+        case SUBTRACT: data.push(second - first); break;
+        case MODULO:   data.push(second % first); break;
         // Storage commands
         case POP:
           if (argumentCode == INTEGER) {
-            out(first);
+            this._write(first);
           } else if (argumentCode == CHARACTER) {
-            out(String.fromCharCode(first));
+            this._write(String.fromCharCode(first));
           } else {
             // Invalid argument; discard value
           }
@@ -145,46 +155,50 @@ Interpreter.prototype.run = function (program, maxInstructions) {
           } else {
             value = VALUES[argumentCode];
           }
-          currentStorage.push(value);
+          data.push(value);
           break;
         case DUPLICATE:
-          currentStorage.duplicate();
+          data.duplicate();
           break;
         case SWAP:
-          currentStorage.push(first);
-          currentStorage.push(second);
+          data.push(first);
+          data.push(second);
           break;
         // Miscellaneous commands
         case SELECT:
-          currentStorage = storage[argumentCode];
+          data = process.data = process.storage[argumentCode];
           break;
         case TRANSFER:
-          storage[argumentCode].push(first);
+          process.storage[argumentCode].push(first);
           break;
         case COMPARE:
-          currentStorage.push(second >= first ? 1 : 0);
+          data.push(second >= first ? 1 : 0);
           break;
         case DECIDE:
-          if (first == 0) currentDirection = ~currentDirection & DIRECTION;
+          if (first == 0) process.direction = ~process.direction & DIRECTION;
           break;
         case TERMINATE:
+          this._flush();
           return;
         case NULL: default:
           break;
       }
-      currentStorageSize = currentStorage.length;
+      process.dataSize = data.length;
+      ++process.instructionCount;
+      ++currentInstructionCount;
     }
     // Move to the next instruction
-    var inc = currentSpeed == ONE ? 1 : 2,
+    var inc = process.speed == ONE ? 1 : 2,
         width = row.length,
         x;
-    switch (currentDirection) {
-      case UP:    x = i - inc; i = x < 0 ? height - 1 : x; break;
-      case DOWN:  x = i + inc; i = x >= height ? 0 : x; break;
-      case RIGHT: x = j + inc; j = x >= width ? 0 : x; break;
-      case LEFT:  x = j - inc; j = x < 0 ? width - 1 : x; break;
+    switch (process.direction) {
+      case UP:    x = index[0] - inc; index[0] = x < 0 ? height - 1 : x; break;
+      case DOWN:  x = index[0] + inc; index[0] = x >= height ? 0 : x; break;
+      case RIGHT: x = index[1] + inc; index[1] = x >= width ? 0 : x; break;
+      case LEFT:  x = index[1] - inc; index[1] = x < 0 ? width - 1 : x; break;
     }
   }
+  this._flush();
 };
 
 Interpreter.prototype._parse = function (program) {
@@ -226,6 +240,22 @@ Interpreter.prototype._createStorage = function () {
     }
   }
   return storage;
+};
+
+Interpreter.prototype._write = function (c) {
+  var bufferingMode = this._bufferingMode,
+      buffer = this._buffer,
+      out = this._out;
+  if (bufferingMode == 'unbuffered') {
+    out.print(c);
+  } else {
+    buffer.push(c);
+    if (bufferingMode == 'line-buffered' && c == '\n') this._flush();
+  }
+};
+
+Interpreter.prototype._flush = function () {
+  this._out.print(this._buffer.splice(0).join(''));
 };
 
 yaja.Interpreter = Interpreter;

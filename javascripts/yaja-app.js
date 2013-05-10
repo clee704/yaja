@@ -8,17 +8,20 @@ function App(config) {
       "run": "F5"
     }
   }, config);
-  this.input = $('.yaja-input')[0];
-  this.output = $('.yaja-output')[0];
-  this.interpreter = new yaja.Interpreter();
+  this._input = $('.yaja-input')[0];
+  var output = this._output = $('.yaja-output')[0];
+  this._interpreter = new yaja.Interpreter();
+  this._interpreter.setOut({print: function (str) {
+    output.value += str;
+    output.scrollTop = output.scrollHeight;
+  }});
   this._bindListeners();
 }
 
 App.prototype.run = function () {
-  this.output.value = '';
-  this.interpreter.run(this.input.value);
-  this.output.value = this.interpreter.buffer.join('');
-  this.output.scrollTop = this.output.scrollHeight;
+  this._output.value = '';
+  this._interpreter.setProgram(this._input.value);
+  this._interpreter.run();
 };
 
 App.prototype._bindListeners = function () {
