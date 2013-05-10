@@ -230,11 +230,7 @@ Interpreter.prototype._makeInstruction = function (charCode) {
 Interpreter.prototype._createStorage = function () {
   var storage = [];
   for (var i = 0; i < 28; ++i) {
-    if (i == QUEUE) {  // ㅇ
-      storage[i] = new yaja.Queue();
-    } else {
-      storage[i] = new yaja.Stack();
-    }
+    storage[i] = i == QUEUE ? new yaja.Queue() : new yaja.Stack();
   }
   return storage;
 };
