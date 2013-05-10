@@ -89,12 +89,12 @@ Interpreter.prototype.reset = function () {
 };
 
 Interpreter.prototype.run = function (maxInstructions) {
-  var process = this._process,
-      code = process.code,
+  var process = this._process;
+  if (process.terminated) return true;
+  var code = process.code,
       data = process.storage[process.storageIndex],
       index = process.instructionIndex,
       currentInstructionCount = 0;
-  if (process.terminated) return true;
   while (maxInstructions === undefined ||
          currentInstructionCount < maxInstructions) {
     var row = code[index[0]];
