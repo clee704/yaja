@@ -37,7 +37,7 @@ describe('yaja.Interpreter', function () {
       expect(output).toEqual('1\n1\n2\n3\n');
       interpreter.run(50);
       expect(output).toEqual('1\n1\n2\n3\n5\n8\n13\n21\n34\n');
-      interpreter.run(55);
+      interpreter.run(57);
       expect(output).toEqual('1\n1\n2\n3\n5\n8\n13\n21\n34\n55\n89\n144\n233\n377\n610');
     });
   });

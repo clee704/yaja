@@ -91,7 +91,7 @@ Interpreter.prototype.run = function (maxInstructions) {
       currentInstructionCount = 0;
   if (process.terminated) return true;
   while (maxInstructions === undefined ||
-         currentInstructionCount <= maxInstructions) {
+         currentInstructionCount < maxInstructions) {
     var row = code[index[0]];
         instruction = row[index[1]];
     if (instruction !== undefined) {
