@@ -5,7 +5,8 @@ function App(config) {
   this.config = $.extend({
     // Define default config values here.
     "shortcuts": {
-      "run": "F5"
+      "run": "F11",
+      "pause": "F8"
     }
   }, config);
   this._input = $('.yaja-input')[0];
