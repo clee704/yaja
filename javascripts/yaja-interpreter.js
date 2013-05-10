@@ -137,7 +137,7 @@ Interpreter.prototype.run = function (maxInstructions) {
         // Arithmetic commands
         case ADD:      data.push(second + first); break;
         case MULTIPLY: data.push(second * first); break;
-        case DIVIDE:   data.push(~~(second / first)); break;
+        case DIVIDE:   data.push(Math.floor(second / first)); break;
         case SUBTRACT: data.push(second - first); break;
         case MODULO:   data.push(second % first); break;
         // Storage commands
@@ -153,7 +153,7 @@ Interpreter.prototype.run = function (maxInstructions) {
         case PUSH:
           var value;
           if (argumentCode == INTEGER) {
-            value = ~~window.prompt('Enter an integer:');
+            value = Math.floor(window.prompt('Enter an integer:'));
           } else if (argumentCode == CHARACTER) {
             value = window.prompt('Enter a character:').charCodeAt(0);
           } else {
@@ -225,11 +225,10 @@ Interpreter.prototype._makeInstruction = function (charCode) {
   // '가'.charCodeAt(0) == 0xac00
   // '힣'.charCodeAt(0) == 0xd7a3
   if (charCode < 0xac00 || charCode > 0xd7a3) return NULL_INSTRUCTION;
-  var x = charCode - 0xac00,
-      argumentCode = x % 28,  // final (종성)
-      y = ~~(x / 28),
-      movementCode = y % 21,  // medial (중성)
-      commandCode = ~~(y / 21);  // initial (초성)
+  var offset = charCode - 0xac00,
+      argumentCode = offset % 28,  // final (종성)
+      movementCode = Math.floor(offset / 28) % 21,  // medial (중성)
+      commandCode = Math.floor(offset / 28 / 21);  // initial (초성)
   return [commandCode, movementCode, argumentCode];
 };
 

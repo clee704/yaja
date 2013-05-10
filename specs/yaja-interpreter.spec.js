@@ -121,13 +121,21 @@ describe('yaja.Interpreter', function () {
 
     it('should run Prime program correctly', function () {
       var program = '붕박투받타뚜\n빠복쟈본차뿌\n희뿌차뿌져번\n몽터주벋받북\n로범차빠속투\n뽀수써투벅벋\n추러뽀더빠속\n빠삭빠싸사뿌\n망희챠저요뗘';
-      spyOn(window, 'prompt').andReturn('47182813');
       interpreter.setProgram(program);
+
+      spyOn(window, 'prompt').andReturn('47182813');
       interpreter.run();
       expect(output).toEqual('47182813');
+
       output = '';
       window.prompt.andReturn('47485817');
-      interpreter.setProgram(program);
+      interpreter.reset();
+      interpreter.run();
+      expect(output).toEqual('0');
+
+      output = '';
+      window.prompt.andReturn('11313131313131');
+      interpreter.reset();
       interpreter.run();
       expect(output).toEqual('0');
     });
