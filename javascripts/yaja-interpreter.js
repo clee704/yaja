@@ -248,7 +248,8 @@ Interpreter.prototype._write = function (c) {
 };
 
 Interpreter.prototype._flush = function () {
-  this._out.print(this._buffer.splice(0).join(''));
+  this._out.print(this._buffer.join(''));
+  this._buffer.length = 0;
 };
 
 yaja.Interpreter = Interpreter;
