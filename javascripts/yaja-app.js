@@ -32,7 +32,9 @@ App.prototype._bindListeners = function () {
       };
   for (var name in actions) {
     var act = actions[name];
-    $(act.htmlClass).click(act.func);
+    $(act.htmlClass).click(act.func).attr('title', function () {
+      return $(this).text().trim() + ' [' + shortcuts[name] + ']';
+    });
     $(window).add('textarea').bind('keydown', shortcuts[name], act.func);
   }
 };
