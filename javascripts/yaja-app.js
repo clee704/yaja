@@ -7,6 +7,7 @@ var KEY_CODE = {
   RETURN: 13,
   PAUSE_BREAK: 19,
   CAPS_LOCK: 20,
+  ESCAPE: 27,
   LEFT_ARROW: 37,
   UP_ARROW: 38,
   RIGHT_ARROW: 39,
@@ -343,6 +344,7 @@ OpenModal.prototype.open = function () {
 
 OpenModal.prototype.close = function () {
   this._modal.modal('hide');
+  this._app.focusInput();
 };
 
 OpenModal.prototype.select = function (index) {
@@ -359,7 +361,6 @@ OpenModal.prototype.loadProgram = function () {
   if (!this._selectedRow) return;
   this._app._loadProgram(this._selectedRow.programName);
   this.close();
-  this._app.focusInput();
 };
 
 OpenModal.prototype.removeProgram = function () {
@@ -434,6 +435,9 @@ OpenModal.prototype._bindListeners = function () {
       return false;
     case KEY_CODE.RETURN:
       self.loadProgram();
+      return false;
+    case KEY_CODE.ESCAPE:
+      self.close();
       return false;
     default:
       return;
