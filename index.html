@@ -11,54 +11,49 @@
   <![endif]-->
 </head>
 <body>
-  <div class="container-fluid">
-    <h1>Yaja: Aheui Interpreter</h1>
-    <section>
-      <div class="btn-toolbar yaja-controls">
-        <div class="btn-group">
-          <button class="btn btn-small btn-primary yaja-run">
-            <i class="icon icon-play icon-white"></i> Run
-          </button>
-          <button class="btn btn-small btn-primary yaja-pause">
-            <i class="icon icon-pause icon-white"></i> <span>Pause</span>
-          </button>
-          <button class="btn btn-small btn-primary yaja-reset">
-            <i class="icon icon-repeat icon-white"></i> <span>Reset</span>
-          </button>
-          <button class="btn btn-small btn-primary yaja-step">
-            <i class="icon icon-arrow-right icon-white"></i> Step
-          </button>
-        </div>
-        <div class="btn-group">
-          <button class="btn btn-small btn-success yaja-save">
-            <i class="icon icon-plus icon-white"></i> Save
-          </button>
-          <button class="btn btn-small btn-success yaja-save">
-            <i class="icon icon-folder-open icon-white"></i> Open
-          </button>
-        </div>
-        <div class="btn-group">
-          <button class="btn btn-small yaja-clear-output">
-            <i class="icon icon-ban-circle"></i> <span>Clear Output</span>
-          </button>
-        </div>
+  <div class="ui-layout-north">
+    <div class="btn-toolbar yaja-controls">
+      <h1>Yaja</h1>
+      <div class="btn-group">
+        <button class="btn btn-small btn-primary yaja-run">
+          <i class="icon icon-play icon-white"></i> Run
+        </button>
+        <button class="btn btn-small btn-primary yaja-pause">
+          <i class="icon icon-pause icon-white"></i> <span>Pause</span>
+        </button>
+        <button class="btn btn-small btn-primary yaja-reset">
+          <i class="icon icon-repeat icon-white"></i> <span>Reset</span>
+        </button>
+        <button class="btn btn-small btn-primary yaja-step">
+          <i class="icon icon-arrow-right icon-white"></i> Step
+        </button>
       </div>
-      <div class="yaja-program-name"></div>
-      <div class="yaja-textareas">
-        <textarea class="input-block-level yaja-input" rows="12"></textarea>
-        <textarea class="input-block-level yaja-output" rows="12" readonly></textarea>
+      <div class="btn-group">
+        <button class="btn btn-small btn-success yaja-save">
+          <i class="icon icon-plus icon-white"></i> Save
+        </button>
+        <button class="btn btn-small btn-success yaja-save">
+          <i class="icon icon-folder-open icon-white"></i> Open
+        </button>
       </div>
-      <div class="yaja-status-bar"></div>
-    </section>
-    <footer>
-      <p>
-        Yaja (Yet Another JS Aheui) is an <a href="http://puzzlet.org/personal/wiki.php/%EC%95%84%ED%9D%AC~Specification">Aheui</a>
-        interpreter and debugger in JavaScript.
-        <a href="#">View source code on GitHub</a>.
-      </p>
-    </footer>
+    </div>
+  </div>
+  <div class="ui-layout-center">
+    <div class="ui-layout-upper-center yaja-pane">
+      <span class="yaja-label">Code</span>
+      <textarea class="yaja-input" rows="12"></textarea>
+    </div>
+    <div class="ui-layout-lower-center yaja-pane">
+      <span class="yaja-label">Output</span>
+      <textarea class="yaja-output" rows="12" readonly></textarea>
+    </div>
+  </div>
+  <div class="ui-layout-south">
+    <div class="yaja-status-bar"></div>
   </div>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+  <script src="vendor/jquery.layout-latest.min.js"></script>
   <script src="vendor/jquery.hotkeys.min.js"></script>
   <script src="vendor/rangyinputs_jquery.min.js"></script>
   <script src="javascripts/yaja-storage.js"></script>

@@ -24,6 +24,7 @@ function App(config) {
   this._interpreter.setOut(this._out);
   this._bindListeners();
   this._updateStatusBar('Idle');
+  this._configureLayout();
 }
 
 App.prototype.run = function () {
@@ -133,6 +134,36 @@ App.prototype._keypress = function (e) {
     this._$input.replaceSelectedText(fullWidthChar);
     return false;
   }
+};
+
+App.prototype._configureLayout = function () {
+  $(document).ready(function () {
+    $('body').layout({
+      spacing_open: 1,
+      north: {
+        closable: false,
+        resizable: false
+      },
+      center: {
+        fxSpeed: "fast",
+        childOptions: {
+          center: {
+            paneSelector: ".ui-layout-upper-center",
+            minSize: 100
+          },
+          south: {
+            paneSelector: ".ui-layout-lower-center",
+            size: 200,
+            minSize: 100
+          }
+        }
+      },
+      south: {
+        closable: false,
+        resizable: false
+      }
+    });
+  });
 };
 
 yaja.App = App;
