@@ -14,7 +14,7 @@ h1 {
   font-weight: normal;
   text-transform: uppercase;
   line-height: 20px;
-  margin: 0 10px 0 5px;
+  margin: 0 10px 5px 5px;
 }
 
 textarea {
@@ -38,10 +38,18 @@ textarea[readonly] {
   cursor: auto;
 }
 
-.yaja-controls {
-  padding: 0 5px;
+.btn-toolbar {
+  margin: 5px 0 0;
+  padding: 0 0 0 5px;
   line-height: 20px;
-  margin: 5px 0;
+}
+
+.btn-group {
+  margin: 0 5px 5px 0;
+}
+
+.btn-group + .btn-group {
+  margin-left: 0;
 }
 
 .yaja-status-bar {
