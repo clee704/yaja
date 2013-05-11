@@ -73,6 +73,10 @@ App.prototype.open = function () {
 App.prototype.save = function () {
   var name = prompt('Program name:');
   if (!name) return;
+  if (this._getSavedProgram(name)) {
+    var overwrite = confirm("Program '" + name + "' already exists. Do you want to replace it?");
+    if (!overwrite) return;
+  }
   this._saveProgram(name);
 };
 
@@ -206,8 +210,12 @@ App.prototype._saveProgram = function (name) {
   this._storage.set('saved_program_' + name, this._input.value);
 };
 
+App.prototype._getSavedProgram = function (name) {
+  return this._storage.get('saved_program_' + name);
+};
+
 App.prototype._loadProgram = function (name) {
-  var program = this._storage.get('saved_program_' + name);
+  var program = this._getSavedProgram(name);
   if (program === undefined) return;
   this.reset();
   this._input.value = program;
