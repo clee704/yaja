@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="144px" height="144px" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(50,50)" stroke="white" stroke-width="12" fill="transparent">
+    <rect x="-49.5" y="-49.5" width="99" height="99" rx="12.5" ry="12.5" fill="#00409c" stroke-width="0" />
+    <circle cx="-15" r="16" fill="transparent" />
+    <polyline points="37,-21 22,-21 22,0 37,0 22,0 22,27" />
+  </g>
+</svg>
