@@ -16,7 +16,9 @@ function App(config) {
     "shortcuts": {
       "run": "Ctrl+Return",
       "pause": "Ctrl+P",
-      "reset": "Ctrl+R"
+      "reset": "Ctrl+R",
+      "open": "Ctrl+O",
+      "save": "Ctrl+S"
     }
   }, config);
   this._currentLoopId = 0;
