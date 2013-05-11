@@ -9,55 +9,48 @@ function App(config) {
       "pause": "F8"
     }
   }, config);
+  this._currentLoopId = 0;
   this._input = $('.yaja-input')[0];
   var output = this._output = $('.yaja-output')[0];
+  this._out = {
+    print: function (str) {
+      output.value += str;
+      output.scrollTop = output.scrollHeight;
+    }
+  };
   this._interpreter = new yaja.Interpreter();
-  this._interpreter.setOut({print: function (str) {
-    output.value += str;
-    output.scrollTop = output.scrollHeight;
-  }});
-  this._pauseButton = $('.yaja-pause');
-  this._paused = false;
-  this._currentLoopId = 0;
+  this._interpreter.setOut(this._out);
   this._bindListeners();
+  this._updateStatusBar('Idle');
 }
 
 App.prototype.run = function () {
-  this.clearOutput();
-  this._interpreter.setProgram(this._input.value);
-  this._pauseButton.attr('disabled', null);
-  this.pause(false);
+  var status = this._getStatus();
+  if (status == 'Running') return;
+  this._updateStatusBar('Running');
+  if (status == 'Idle' || status == 'Terminated') {
+    this._interpreter.setProgram(this._input.value);
+  }
+  this._startLoop();
 };
 
-App.prototype.pause = function (paused) {
-  if (this._pauseButton.attr('disabled')) return;
-  ++this._currentLoopId;  // Stop current loop
-  this.paused = paused === undefined ? !this.paused : paused;
-  if (this.paused) {
-    this._pauseButton.find('span').text('Resume');
-  } else {
-    this._pauseButton.find('span').text('Pause');
-    this._resume();
-  }
+App.prototype.pause = function () {
+  var status = this._getStatus();
+  if (status == 'Paused') return;
+  this._updateStatusBar('Paused');
+  this._stopLoop();
+  if (status == 'Idle') this._interpreter.setProgram(this._input.value);
+};
+
+App.prototype.reset = function () {
+  if (this._getStatus() == 'Reset') return;
+  this._updateStatusBar('Reset');
+  this._stopLoop();
+  this._interpreter.setProgram(this._input.value);
 };
 
 App.prototype.clearOutput = function () {
   this._output.value = '';
-};
-
-App.prototype._resume = function () {
-  var self = this,
-      interpreter = this._interpreter,
-      currentLoopId = ++this._currentLoopId,
-      loop = function () {
-        if (currentLoopId != self._currentLoopId) return;
-        if (interpreter.run(10000)) {  // Terminated
-          self._pauseButton.attr('disabled', 'disabled');
-        } else {
-          setTimeout(loop, 0);
-        }
-      };
-  loop();
 };
 
 App.prototype._bindListeners = function () {
@@ -71,6 +64,10 @@ App.prototype._bindListeners = function () {
         "pause": {
           func: function () { self.pause(); },
           htmlClass: ".yaja-pause"
+        },
+        "reset": {
+          func: function () { self.reset(); },
+          htmlClass: ".yaja-reset"
         },
         "clearOutput": {
           func: function () { self.clearOutput(); },
@@ -86,6 +83,47 @@ App.prototype._bindListeners = function () {
       });
       $(window).add('textarea').bind('keydown', shortcuts[name], act.func);
     }
+  }
+};
+
+App.prototype._getStatus = function () {
+  return this._status;
+};
+
+App.prototype._updateStatusBar = function (status) {
+  this._status = status;
+  $('.yaja-status-bar').text(status);
+};
+
+App.prototype._startLoop = function () {
+  var self = this,
+      interpreter = this._interpreter,
+      // Prevent multiple calls to _startLoop() from creating as many loops
+      // as the calls.
+      currentLoopId = ++this._currentLoopId,
+      loop = function () {
+        if (currentLoopId != self._currentLoopId) return;
+        if (interpreter.run(10000)) {  // Terminated
+          self._updateStatusBar('Terminated');
+        } else {
+          setTimeout(loop, 0);
+        }
+      };
+  loop();
+};
+
+App.prototype._stopLoop = function () {
+  ++this._currentLoopId;
+};
+
+App.prototype._getFullWidthChar = function (c) {
+  var charCode = c.charCodeAt(0);
+  if (charCode >= 33 && charCode <= 270) {
+    return String.fromCharCode(charCode + 65248);
+  } else if (charCode == 32) {
+    return String.fromCharCode(12288);
+  } else {
+    return c;
   }
 };
 

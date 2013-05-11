@@ -4,33 +4,57 @@
   <meta charset="UTF-8">
   <title>Yaja: Aheui Interpreter in JavaScript</title>
   <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
+  <link href="//fonts.googleapis.com/earlyaccess/nanumgothiccoding.css" rel="stylesheet">
   <link href="stylesheets/style.css" rel="stylesheet">
   <!--[if lt IE 9]>
-    <script src='//html5shiv.googlecode.com/svn/trunk/html5.js'></script>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
   <![endif]-->
 </head>
 <body>
   <div class="container">
-    <h1>Yaja</h1>
-    <p>
-      Yaja (Yet Another JS Aheui) is an <a href="http://puzzlet.org/personal/wiki.php/%EC%95%84%ED%9D%AC~Specification">Aheui</a>
-      interpreter and debugger in JavaScript.
-    </p>
-    <div class="yaja-controls">
-      <button class="btn btn-primary yaja-run">
-        <i class="icon icon-play icon-white"></i> Run
-      </button>
-      <button class="btn yaja-pause" disabled>
-        <i class="icon icon-pause"></i> <span>Pause</span>
-      </button>
-      <button class="btn yaja-clear-output">
-        <i class="icon icon-ban-circle"></i> <span>Clear Output</span>
-      </button>
-    </div>
-    <textarea class="input-block-level yaja-input" rows="12"></textarea>
-    <textarea class="input-block-level yaja-output" rows="12" readonly></textarea>
+    <h1>Yaja: Aheui Interpreter</h1>
+    <section>
+      <div class="btn-toolbar yaja-controls">
+        <div class="btn-group">
+          <button class="btn btn-small btn-primary yaja-run">
+            <i class="icon icon-play icon-white"></i> Run
+          </button>
+          <button class="btn btn-small btn-primary yaja-pause">
+            <i class="icon icon-pause icon-white"></i> <span>Pause</span>
+          </button>
+          <button class="btn btn-small btn-primary yaja-reset">
+            <i class="icon icon-repeat icon-white"></i> <span>Reset</span>
+          </button>
+          <button class="btn btn-small btn-primary yaja-step">
+            <i class="icon icon-arrow-right icon-white"></i> Step
+          </button>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-small btn-success yaja-save">
+            <i class="icon icon-plus icon-white"></i> Save
+          </button>
+          <button class="btn btn-small btn-success yaja-save">
+            <i class="icon icon-folder-open icon-white"></i> Open
+          </button>
+        </div>
+        <button class="btn btn-small yaja-clear-output">
+          <i class="icon icon-ban-circle"></i> <span>Clear Output</span>
+        </button>
+      </div>
+      <div class="yaja-program-name"></div>
+      <textarea class="input-block-level yaja-input" rows="12"></textarea>
+      <textarea class="input-block-level yaja-output" rows="12" readonly></textarea>
+      <div class="yaja-status-bar"></div>
+    </section>
+    <footer>
+      <p>
+        Yaja (Yet Another JS Aheui) is an <a href="http://puzzlet.org/personal/wiki.php/%EC%95%84%ED%9D%AC~Specification">Aheui</a>
+        interpreter and debugger in JavaScript.
+        <a href="#">View source code on GitHub</a>.
+      </p>
+    </footer>
   </div>
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
   <script src="vendor/jquery.hotkeys.js"></script>
   <script src="javascripts/yaja-storage.js"></script>
   <script src="javascripts/yaja-interpreter.js"></script>
