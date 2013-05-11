@@ -5,8 +5,9 @@ function App(config) {
   this.config = $.extend({
     // Define default config values here.
     "shortcuts": {
-      "run": "F11",
-      "pause": "F8"
+      "run": "Ctrl+Return",
+      "pause": "Ctrl+P",
+      "reset": "Ctrl+R"
     }
   }, config);
   this._currentLoopId = 0;
@@ -61,15 +62,15 @@ App.prototype._bindListeners = function () {
       shortcuts = this.config.shortcuts,
       actions = {
         "run": {
-          func: function () { self.run(); },
+          func: function () { self.run(); return false; },
           htmlClass: ".yaja-run"
         },
         "pause": {
-          func: function () { self.pause(); },
+          func: function () { self.pause(); return false; },
           htmlClass: ".yaja-pause"
         },
         "reset": {
-          func: function () { self.reset(); },
+          func: function () { self.reset(); return false; },
           htmlClass: ".yaja-reset"
         }
       };
