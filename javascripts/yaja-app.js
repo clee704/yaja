@@ -1,5 +1,5 @@
 var yaja = typeof yaja === 'undefined' ? {} : yaja;
-(function (window, yaja, $, undefined) {
+(function (yaja, $, undefined) {
 
 var KEY_CODE = {
   BACKSPACE: 8,
@@ -176,8 +176,8 @@ App.prototype._updateRuler = function () {
 
 App.prototype._updateCodeSize = function () {
   var program = this._input.value,
-      lines = this._input.value.split('\n'),
-      chars = this._input.value.length - (lines.length - 1),
+      lines = program.split('\n'),
+      chars = program.length - (lines.length - 1),
       height = chars == 0 ? 0 : lines.length,
       width = 0;
   for (var i = 0; i < height; ++i) {
@@ -218,4 +218,4 @@ App.prototype._configureLayout = function () {
 
 yaja.App = App;
 
-})(window, yaja, jQuery);
+})(yaja, jQuery);
