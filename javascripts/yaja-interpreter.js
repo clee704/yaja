@@ -1,5 +1,5 @@
 var yaja = typeof yaja === 'undefined' ? {} : yaja;
-(function (window, yaja, undefined) {
+(function (yaja, undefined) {
 
 // Intials: ㄱ ㄲ ㄴ ㄷ ㄸ ㄹ ㅁ ㅂ ㅃ ㅅ ㅆ ㅇ ㅈ ㅉ ㅊ ㅋ ㅌ ㅍ ㅎ
 // Command codes
@@ -159,9 +159,9 @@ Interpreter.prototype.run = function (maxInstructions) {
         case PUSH:
           var value;
           if (argumentCode == INTEGER) {
-            value = Math.floor(window.prompt('Enter an integer:'));
+            value = Math.floor(prompt('Enter an integer:'));
           } else if (argumentCode == CHARACTER) {
-            value = window.prompt('Enter a character:').charCodeAt(0);
+            value = prompt('Enter a character:').charCodeAt(0);
           } else {
             value = VALUES[argumentCode];
           }
@@ -265,4 +265,4 @@ Interpreter.prototype._flush = function () {
 
 yaja.Interpreter = Interpreter;
 
-})(window, yaja);
+})(yaja);
