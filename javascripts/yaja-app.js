@@ -1,6 +1,15 @@
 var yaja = typeof yaja === 'undefined' ? {} : yaja;
 (function (window, yaja, $, undefined) {
 
+var KEY_CODE = {
+  BACKSPACE: 8,
+  TAB: 9,
+  PAUSE_BREAK: 19,
+  CAPS_LOCK: 20,
+  SCROLL_LOCK: 145,
+  IME: 229
+};
+
 function App(config) {
   this.config = $.extend({
     // Define default config values here.
@@ -88,6 +97,14 @@ App.prototype._bindListeners = function () {
     }
   }
   this._$input.keypress(function (e) {
+    // In Firefox, special keys also trigger keypress events; so filter them
+    var c = e.which;
+    if (e.metaKey || e.altKey || e.ctrlKey ||
+        c == KEY_CODE.IME || c == 0 || c == KEY_CODE.BACKSPACE ||
+        c == KEY_CODE.TAB || c == KEY_CODE.PAUSE_BREAK ||
+        c == KEY_CODE.CAPS_LOCK || c == KEY_CODE.SCROLL_LOCK) {
+      return;
+    }
     return self._convertKeypressToFullWidth(e.which);
   }).keyup(function () {
     self._updateRuler();
