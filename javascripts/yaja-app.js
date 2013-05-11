@@ -4,8 +4,13 @@ var yaja = typeof yaja === 'undefined' ? {} : yaja;
 var KEY_CODE = {
   BACKSPACE: 8,
   TAB: 9,
+  RETURN: 13,
   PAUSE_BREAK: 19,
   CAPS_LOCK: 20,
+  LEFT_ARROW: 37,
+  UP_ARROW: 38,
+  RIGHT_ARROW: 39,
+  DOWN_ARROW: 40,
   SCROLL_LOCK: 145,
   IME: 229
 };
@@ -191,19 +196,56 @@ App.prototype._bindInputListeners = function () {
 };
 
 App.prototype._bindModalListeners = function () {
-  var self = this;
+  var self = this,
+      openModal = $('.yaja-open-modal');
+      openModalBody = $('.yaja-open-modal-body');
   $('.yaja-open-modal-open').click(function () {
-    var tr = $('.yaja-open-modal-body .selected');
+    var tr = openModalBody.find('.selected');
     if (tr) {
       self._loadProgram(tr.data('program_name'));
-      $('.yaja-open-modal').modal('hide');
+      openModal.modal('hide');
     }
   });
   $('.yaja-open-modal-delete').click(function () {
-    var tr = $('.yaja-open-modal-body .selected');
+    var tr = openModalBody.find('.selected');
     if (tr) {
       self._removeProgram(tr.data('program_name'));
       tr.remove();
+    }
+  });
+  openModal.keydown(function (e) {
+    var c = e.which;
+    if ($(this).find('tbody td.name').length == 0) return;
+    switch (c) {
+    case KEY_CODE.DOWN_ARROW:
+      var selected = openModalBody.find('.selected');
+      if (selected.length == 0) {
+        openModalBody.find('tbody tr:first').addClass('selected');
+      } else {
+        var next = selected.next();
+        if (next.length != 0) {
+          selected.removeClass('selected');
+          next.addClass('selected');
+        }
+      }
+      break;
+    case KEY_CODE.UP_ARROW:
+      var selected = openModalBody.find('.selected');
+      if (selected.length == 0) {
+        openModalBody.find('tbody tr:last').addClass('selected');
+      } else {
+        var prev = selected.prev();
+        if (prev.length != 0) {
+          selected.removeClass('selected')
+          prev.addClass('selected');
+        }
+      }
+      break;
+    case KEY_CODE.RETURN:
+      $('.yaja-open-modal-open').click();
+      break;
+    default:
+      return;
     }
   });
 };
