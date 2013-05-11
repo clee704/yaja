@@ -84,10 +84,6 @@ App.prototype.clearOutput = function () {
   this._output.value = '';
 };
 
-App.prototype.focusInput = function () {
-  this._$input.focus();
-};
-
 App.prototype._initObjects = function () {
   var self = this;
   this._input = $('.yaja-input')[0];
@@ -241,6 +237,10 @@ App.prototype._getSavedPrograms = function () {
   return {names: names, programs: programs};
 };
 
+App.prototype._focusInput = function () {
+  this._$input.focus();
+};
+
 App.prototype._startLoop = function () {
   var self = this,
       interpreter = this._interpreter,
@@ -352,7 +352,6 @@ OpenModal.prototype.open = function () {
 
 OpenModal.prototype.close = function () {
   this._modal.modal('hide');
-  this._app.focusInput();
 };
 
 OpenModal.prototype.select = function (index) {
@@ -375,6 +374,9 @@ OpenModal.prototype.removeProgram = function () {
   if (!this._selectedRow) return;
   this._app._removeProgram(this._selectedRow.programName);
   this._data.splice(this._selectedRow.index, 1);
+  for (var i = this._selectedRow.index; i < this._data.length; ++i) {
+    this._data[i].index = i;
+  }
   this._selectedRow.tr.remove();
   this._selectedRow = undefined;
 };
@@ -425,7 +427,9 @@ OpenModal.prototype._bindListeners = function () {
   var self = this;
   $('.yaja-open-modal-open').click(function () { self.loadProgram(); });
   $('.yaja-open-modal-delete').click(function () { self.removeProgram(); });
-  this._modal.keydown(function (e) {
+  this._modal.bind('hidden', function () {
+    self._app._focusInput();
+  }).keydown(function (e) {
     var c = e.which,
         n = self._data.length;
     if (n == 0) return;
