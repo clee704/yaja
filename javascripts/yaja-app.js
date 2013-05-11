@@ -349,23 +349,23 @@ OpenModal.prototype.close = function () {
   this._modal.modal('hide');
 };
 
-OpenModal.prototype.select = function (index) {
+OpenModal.prototype._select = function (index) {
   if (this._selectedRow) this._selectedRow.tr.removeClass('selected');
   this._selectedRow = this._data[index];
   this._selectedRow.tr.addClass('selected');
 };
 
-OpenModal.prototype.selectedIndex = function () {
+OpenModal.prototype._selectedIndex = function () {
   if (this._selectedRow) return this._selectedRow.index;
 };
 
-OpenModal.prototype.loadProgram = function () {
+OpenModal.prototype._loadProgram = function () {
   if (!this._selectedRow) return;
   this._app._loadProgram(this._selectedRow.programName);
   this.close();
 };
 
-OpenModal.prototype.removeProgram = function () {
+OpenModal.prototype._removeProgram = function () {
   if (!this._selectedRow) return;
   this._app._removeProgram(this._selectedRow.programName);
   this._data.splice(this._selectedRow.index, 1);
@@ -392,10 +392,10 @@ OpenModal.prototype._updateTable = function () {
       $('<td class="name">' + row.programName + '</td>').appendTo(tr);
       $('<td><code>' + row.programSummary + '</code></td>').appendTo(tr);
       tr.click(function () {
-        self.select($(this).data('index'));
+        self._select($(this).data('index'));
       }).dblclick(function () {
-        self.select($(this).data('index'));
-        self.loadProgram();
+        self._select($(this).data('index'));
+        self._loadProgram();
       }).appendTo(tbody);
     }
   }
@@ -420,8 +420,8 @@ OpenModal.prototype._updateData = function () {
 
 OpenModal.prototype._bindListeners = function () {
   var self = this;
-  $('.yaja-open-modal-open').click(function () { self.loadProgram(); });
-  $('.yaja-open-modal-delete').click(function () { self.removeProgram(); });
+  $('.yaja-open-modal-open').click(function () { self._loadProgram(); });
+  $('.yaja-open-modal-delete').click(function () { self._removeProgram(); });
   this._modal.bind('hidden', function () {
     self._app._focusInput();
   }).keydown(function (e) {
@@ -430,20 +430,20 @@ OpenModal.prototype._bindListeners = function () {
     if (n == 0) return;
     switch (c) {
     case KEY_CODE.DOWN_ARROW:
-      var i = self.selectedIndex();
-      self.select(i === undefined ? 0 : i < n - 1 ? i + 1 : 0);
+      var i = self._selectedIndex();
+      self._select(i === undefined ? 0 : i < n - 1 ? i + 1 : 0);
       return false;
     case KEY_CODE.UP_ARROW:
-      var i = self.selectedIndex();
-      self.select(i === undefined ? n - 1 : i > 0 ? i - 1 : n - 1);
+      var i = self._selectedIndex();
+      self._select(i === undefined ? n - 1 : i > 0 ? i - 1 : n - 1);
       return false;
     case KEY_CODE.DELETE:
-      var i = self.selectedIndex();
-      self.removeProgram();
-      self.select(Math.min(i, n - 2));
+      var i = self._selectedIndex();
+      self._removeProgram();
+      self._select(Math.min(i, n - 2));
       return false;
     case KEY_CODE.RETURN:
-      self.loadProgram();
+      self._loadProgram();
       return false;
     case KEY_CODE.ESCAPE:
       self.close();
