@@ -30,6 +30,7 @@ App.prototype.run = function () {
   if (status == 'Running') return;
   this._updateStatusBar('Running');
   if (status == 'Idle' || status == 'Terminated') {
+    this.clearOutput();
     this._interpreter.setProgram(this._input.value);
   }
   this._startLoop();
@@ -47,6 +48,7 @@ App.prototype.reset = function () {
   if (this._getStatus() == 'Reset') return;
   this._updateStatusBar('Reset');
   this._stopLoop();
+  this.clearOutput();
   this._interpreter.setProgram(this._input.value);
 };
 
@@ -69,10 +71,6 @@ App.prototype._bindListeners = function () {
         "reset": {
           func: function () { self.reset(); },
           htmlClass: ".yaja-reset"
-        },
-        "clearOutput": {
-          func: function () { self.clearOutput(); },
-          htmlClass: ".yaja-clear-output"
         }
       };
   for (var name in actions) {
