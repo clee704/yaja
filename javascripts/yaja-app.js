@@ -246,7 +246,7 @@ App.prototype._startLoop = function () {
           setTimeout(loop, 0);
         }
       };
-  loop();
+  setTimeout(loop, 0);
 };
 
 App.prototype._stopLoop = function () {
