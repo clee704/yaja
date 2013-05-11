@@ -54,6 +54,8 @@
         <span class="yaja-status"></span>
       </div>
       <div class="pull-right">
+        <span class="yaja-code-size"></span>
+        |
         <span class="yaja-ruler"></span>
       </div>
     </div>
@@ -67,7 +69,9 @@
   <script src="javascripts/yaja-interpreter.js"></script>
   <script src="javascripts/yaja-app.js"></script>
   <script>
-    var app = new yaja.App();
+    $(function () {
+      var app = new yaja.App();
+    });
   </script>
 </body>
 </html>

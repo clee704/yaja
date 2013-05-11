@@ -23,14 +23,16 @@ function App(config) {
   this._interpreter = new yaja.Interpreter();
   this._interpreter.setOut(this._out);
   this._bindListeners();
-  this._updateStatusBar('Idle');
+  this._setStatus('Idle');
+  this._updateRuler();
+  this._updateCodeSize();
   this._configureLayout();
 }
 
 App.prototype.run = function () {
   var status = this._getStatus();
   if (status == 'Running') return;
-  this._updateStatusBar('Running');
+  this._setStatus('Running');
   if (status == 'Idle' || status == 'Terminated') {
     this.clearOutput();
     this._interpreter.setProgram(this._input.value);
@@ -41,14 +43,14 @@ App.prototype.run = function () {
 App.prototype.pause = function () {
   var status = this._getStatus();
   if (status == 'Paused') return;
-  this._updateStatusBar('Paused');
+  this._setStatus('Paused');
   this._stopLoop();
   if (status == 'Idle') this._interpreter.setProgram(this._input.value);
 };
 
 App.prototype.reset = function () {
   if (this._getStatus() == 'Reset') return;
-  this._updateStatusBar('Reset');
+  this._setStatus('Reset');
   this._stopLoop();
   this.clearOutput();
   this._interpreter.setProgram(this._input.value);
@@ -89,6 +91,7 @@ App.prototype._bindListeners = function () {
     return self._convertKeypressToFullWidth(e.which);
   }).keyup(function () {
     self._updateRuler();
+    self._updateCodeSize();
   });
 };
 
@@ -96,7 +99,7 @@ App.prototype._getStatus = function () {
   return this._status;
 };
 
-App.prototype._updateStatusBar = function (status) {
+App.prototype._setStatus = function (status) {
   this._status = status;
   $('.yaja-status').text(status);
 };
@@ -110,7 +113,7 @@ App.prototype._startLoop = function () {
       loop = function () {
         if (currentLoopId != self._currentLoopId) return;
         if (interpreter.run(10000)) {  // Terminated
-          self._updateStatusBar('Terminated');
+          self._setStatus('Terminated');
         } else {
           setTimeout(loop, 0);
         }
@@ -144,7 +147,7 @@ App.prototype._updateRuler = function () {
   var s = this._$input.getSelection(),
       text;
   if (s.start != s.end) {
-    text = ''
+    text = (s.end - s.start) + ' characters selected';
   } else {
     var index = s.end,
         lines = this._input.value.substr(0, index).split('\n'),
@@ -153,6 +156,18 @@ App.prototype._updateRuler = function () {
     text = 'Line ' + line + ', Column ' + col;
   }
   $('.yaja-ruler').text(text);
+};
+
+App.prototype._updateCodeSize = function () {
+  var program = this._input.value,
+      lines = this._input.value.split('\n'),
+      chars = this._input.value.length - (lines.length - 1),
+      height = chars == 0 ? 0 : lines.length,
+      width = 0;
+  for (var i = 0; i < height; ++i) {
+    if (lines[i].length > width) width = lines[i].length;
+  }
+  $('.yaja-code-size').text(width + 'x' + height + ', ' + chars + ' characters');
 };
 
 App.prototype._configureLayout = function () {
