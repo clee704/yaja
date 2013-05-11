@@ -7,7 +7,9 @@ body {
 h1 {
   display: inline-block;
   vertical-align: middle;
-  font-size: 20px;
+  font-size: 18px;
+  font-weight: normal;
+  text-transform: uppercase;
   line-height: 20px;
   margin: 0 10px 0 5px;
 }
@@ -29,13 +31,17 @@ textarea {
   resize: none;  /* Turn off Chrome's textarea resizer */
 }
 
+textarea[readonly] {
+  cursor: auto;
+}
+
 .yaja-controls {
   padding: 0 5px;
   line-height: 20px;
+  margin: 5px 0;
 }
 
 .yaja-status-bar {
-  background: white;
   padding: 5px;
 }
 
@@ -44,6 +50,7 @@ textarea {
 }
 
 .yaja-label {
+  color: #666;
   position: absolute;
   display: block;
   top: 6px;
