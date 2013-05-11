@@ -184,8 +184,7 @@ App.prototype._startAutosaveLoop = function () {
 
 App.prototype._loadAutosavedProgram = function () {
   if (this._input.value != '') return;
-  var autosavedProgram = this._storage.get('autosave');
-  if (autosavedProgram !== undefined) this._input.value = autosavedProgram;
+  this._loadProgram(this._storage.get('autosave'));
 };
 
 App.prototype._getStatus = function () {
@@ -205,11 +204,16 @@ App.prototype._getSavedProgram = function (name) {
   return this._storage.get('saved_program_' + name);
 };
 
-App.prototype._loadProgram = function (name) {
-  var program = this._getSavedProgram(name);
+App.prototype._loadSavedProgram = function (name) {
+  this._loadProgram(this._getSavedProgram(name));
+};
+
+App.prototype._loadProgram = function(program) {
   if (program === undefined) return;
   this.reset();
   this._input.value = program;
+  this._updateRuler();
+  this._updateCodeSize();
 };
 
 App.prototype._removeProgram = function (name) {
@@ -372,7 +376,7 @@ OpenModal.prototype._selectedIndex = function () {
 
 OpenModal.prototype._loadProgram = function () {
   if (!this._selectedRow) return;
-  this._app._loadProgram(this._selectedRow.programName);
+  this._app._loadSavedProgram(this._selectedRow.programName);
   this.close();
 };
 
