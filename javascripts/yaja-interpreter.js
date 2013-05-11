@@ -85,7 +85,13 @@ Interpreter.prototype.reset = function () {
   process.storage = this._createStorage();
   process.storageIndex = 0;
   process.instructionCount = 0;
-  process.terminated = process.code.length == 0;
+  process.terminated = true;
+  for (var i = 0; i < process.code.length; ++i) {
+    if (process.code[i].length > 0) {
+      process.terminated = false;
+      break;
+    }
+  }
 };
 
 Interpreter.prototype.run = function (maxInstructions) {
