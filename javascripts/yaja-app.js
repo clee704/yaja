@@ -11,6 +11,7 @@ var KEY_CODE = {
   UP_ARROW: 38,
   RIGHT_ARROW: 39,
   DOWN_ARROW: 40,
+  DELETE: 46,
   SCROLL_LOCK: 145,
   IME: 229
 };
@@ -31,7 +32,6 @@ function App(config) {
   this._initObjects();
   this._bindActionListeners();
   this._bindInputListeners();
-  this._bindModalListeners();
   this._startAutosaveLoop();
   this._loadAutosavedProgram();
   this._setStatus('Idle');
@@ -65,8 +65,8 @@ App.prototype.reset = function () {
   this.clearOutput();
 };
 
-App.prototype.clearOutput = function () {
-  this._output.value = '';
+App.prototype.open = function () {
+  this._openModal.open();
 };
 
 App.prototype.save = function () {
@@ -75,34 +75,12 @@ App.prototype.save = function () {
   this._saveProgram(name);
 };
 
-App.prototype.open = function () {
-  var self = this,
-      modal = $('.yaja-open-modal'),
-      savedPrograms = this._getSavedPrograms(),
-      tbody = $('.yaja-open-modal-body tbody').detach();
-  tbody.empty();
-  if (savedPrograms.names.length == 0) {
-    tbody.append('<td class="empty" colspan="2">No saved programs</td>');
-  } else {
-    for (var i = 0; i < savedPrograms.names.length; ++i) {
-      var name = savedPrograms.names[i],
-          programSummary = savedPrograms.programs[name].substr(0, 80),
-          tr = $('<tr></tr>').data('program_name', name);
-      $('<td class="name">' + name + '</td>').appendTo(tr);
-      $('<td><code>' + programSummary + '</code></td>').appendTo(tr);
-      tr.click(function () {
-        tbody.find('.selected').removeClass('selected');
-        $(this).addClass('selected');
-      }).dblclick(function () {
-        self._loadProgram($(this).data('program_name'));
-        modal.modal('hide');
-        return false;
-      });
-      tr.appendTo(tbody);
-    }
-  }
-  $('.yaja-open-modal-body table').append(tbody);
-  modal.modal();
+App.prototype.clearOutput = function () {
+  this._output.value = '';
+};
+
+App.prototype.focusInput = function () {
+  this._$input.focus();
 };
 
 App.prototype._initObjects = function () {
@@ -138,6 +116,7 @@ App.prototype._initObjects = function () {
       return keys;
     }
   };
+  this._openModal = new OpenModal(this);
 };
 
 App.prototype._bindActionListeners = function () {
@@ -156,13 +135,13 @@ App.prototype._bindActionListeners = function () {
           func: function () { self.reset(); return false; },
           htmlClass: ".yaja-reset"
         },
-        "save": {
-          func: function () { self.save(); return false; },
-          htmlClass: ".yaja-save"
-        },
         "open": {
           func: function () { self.open(); return false; },
           htmlClass: ".yaja-open"
+        },
+        "save": {
+          func: function () { self.save(); return false; },
+          htmlClass: ".yaja-save"
         }
       };
   for (var name in actions) {
@@ -192,61 +171,6 @@ App.prototype._bindInputListeners = function () {
   }).keyup(function () {
     self._updateRuler();
     self._updateCodeSize();
-  });
-};
-
-App.prototype._bindModalListeners = function () {
-  var self = this,
-      openModal = $('.yaja-open-modal');
-      openModalBody = $('.yaja-open-modal-body');
-  $('.yaja-open-modal-open').click(function () {
-    var tr = openModalBody.find('.selected');
-    if (tr) {
-      self._loadProgram(tr.data('program_name'));
-      openModal.modal('hide');
-    }
-  });
-  $('.yaja-open-modal-delete').click(function () {
-    var tr = openModalBody.find('.selected');
-    if (tr) {
-      self._removeProgram(tr.data('program_name'));
-      tr.remove();
-    }
-  });
-  openModal.keydown(function (e) {
-    var c = e.which;
-    if ($(this).find('tbody td.name').length == 0) return;
-    switch (c) {
-    case KEY_CODE.DOWN_ARROW:
-      var selected = openModalBody.find('.selected');
-      if (selected.length == 0) {
-        openModalBody.find('tbody tr:first').addClass('selected');
-      } else {
-        var next = selected.next();
-        if (next.length != 0) {
-          selected.removeClass('selected');
-          next.addClass('selected');
-        }
-      }
-      break;
-    case KEY_CODE.UP_ARROW:
-      var selected = openModalBody.find('.selected');
-      if (selected.length == 0) {
-        openModalBody.find('tbody tr:last').addClass('selected');
-      } else {
-        var prev = selected.prev();
-        if (prev.length != 0) {
-          selected.removeClass('selected')
-          prev.addClass('selected');
-        }
-      }
-      break;
-    case KEY_CODE.RETURN:
-      $('.yaja-open-modal-open').click();
-      break;
-    default:
-      return;
-    }
   });
 };
 
@@ -401,6 +325,119 @@ App.prototype._configureLayout = function () {
         resizable: false
       }
     });
+  });
+};
+
+function OpenModal(app) {
+  this._app = app;
+  this._modal = $('.yaja-open-modal');
+  this._table = $('.yaja-open-modal-body table');
+  this._tbody = this._table.find('tbody');
+  this._bindListeners();
+}
+
+OpenModal.prototype.open = function () {
+  this._updateTable();
+  this._modal.modal();
+};
+
+OpenModal.prototype.close = function () {
+  this._modal.modal('hide');
+};
+
+OpenModal.prototype.select = function (index) {
+  if (this._selectedRow) this._selectedRow.tr.removeClass('selected');
+  this._selectedRow = this._data[index];
+  this._selectedRow.tr.addClass('selected');
+};
+
+OpenModal.prototype.selectedIndex = function () {
+  if (this._selectedRow) return this._selectedRow.index;
+};
+
+OpenModal.prototype.loadProgram = function () {
+  if (!this._selectedRow) return;
+  this._app._loadProgram(this._selectedRow.programName);
+  this.close();
+  this._app.focusInput();
+};
+
+OpenModal.prototype.removeProgram = function () {
+  if (!this._selectedRow) return;
+  this._app._removeProgram(this._selectedRow.programName);
+  this._data.splice(this._selectedRow.index, 1);
+  this._selectedRow.tr.remove();
+  this._selectedRow = undefined;
+};
+
+OpenModal.prototype._updateTable = function () {
+  this._updateData();
+  var self = this,
+      data = this._data,
+      tbody = this._tbody.detach();
+  tbody.empty();
+  if (data.length == 0) {
+    tbody.append('<td class="empty" colspan="2">No saved programs</td>');
+  } else {
+    for (var i = 0; i < data.length; ++i) {
+      var row = data[i],
+          tr = $('<tr></tr>').data('index', i);
+      row.tr = tr;
+      $('<td class="name">' + row.programName + '</td>').appendTo(tr);
+      $('<td><code>' + row.programSummary + '</code></td>').appendTo(tr);
+      tr.click(function () {
+        self.select($(this).data('index'));
+      }).dblclick(function () {
+        self.select($(this).data('index'));
+        self.loadProgram();
+      }).appendTo(tbody);
+    }
+  }
+  this._table.append(tbody);
+};
+
+OpenModal.prototype._updateData = function () {
+  var savedPrograms = this._app._getSavedPrograms();
+  data = [];
+  for (var i = 0; i < savedPrograms.names.length; ++i) {
+    var name = savedPrograms.names[i],
+        row = {
+          index: i,
+          programName: name,
+          programSummary: savedPrograms.programs[name].substr(0, 80)
+        };
+    data.push(row);
+  }
+  this._data = data;
+  this._selectedRow = undefined;
+};
+
+OpenModal.prototype._bindListeners = function () {
+  var self = this;
+  $('.yaja-open-modal-open').click(function () { self.loadProgram(); });
+  $('.yaja-open-modal-delete').click(function () { self.removeProgram(); });
+  this._modal.keydown(function (e) {
+    var c = e.which,
+        n = self._data.length;
+    if (n == 0) return;
+    switch (c) {
+    case KEY_CODE.DOWN_ARROW:
+      var i = self.selectedIndex();
+      self.select(i === undefined ? 0 : i < n - 1 ? i + 1 : 0);
+      return false;
+    case KEY_CODE.UP_ARROW:
+      var i = self.selectedIndex();
+      self.select(i === undefined ? n - 1 : i > 0 ? i - 1 : n - 1);
+      return false;
+    case KEY_CODE.DELETE:
+      self.removeProgram();
+      return false;
+    case KEY_CODE.RETURN:
+      self.loadProgram();
+      return false;
+    default:
+      return;
+    }
   });
 };
 
