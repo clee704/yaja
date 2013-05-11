@@ -439,7 +439,9 @@ OpenModal.prototype._bindListeners = function () {
       self.select(i === undefined ? n - 1 : i > 0 ? i - 1 : n - 1);
       return false;
     case KEY_CODE.DELETE:
+      var i = self.selectedIndex();
       self.removeProgram();
+      self.select(Math.min(i, n - 2));
       return false;
     case KEY_CODE.RETURN:
       self.loadProgram();
