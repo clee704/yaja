@@ -20,19 +20,11 @@ function App(config) {
     }
   }, config);
   this._currentLoopId = 0;
-  this._input = $('.yaja-input')[0];
-  this._$input = $(this._input);
-  var output = this._output = $('.yaja-output')[0];
-  this._out = {
-    print: function (str) {
-      output.value += str;
-      output.scrollTop = output.scrollHeight;
-    }
-  };
-  this._interpreter = new yaja.Interpreter();
-  this._interpreter.setOut(this._out);
+  this._storagePrefix = 'yaja_';
+  this._initObjects();
   this._bindActionListeners();
   this._bindInputListeners();
+  this._bindModalListeners();
   this._startAutosaveLoop();
   this._loadAutosavedProgram();
   this._setStatus('Idle');
@@ -73,18 +65,68 @@ App.prototype.clearOutput = function () {
 App.prototype.save = function () {
   var name = prompt('Program name:');
   if (!name) return;
-  localStorage['saved-program-' + name] = this._input.value;
+  this._saveProgram(name);
 };
 
 App.prototype.open = function () {
-  var name = prompt('Program name:');
-  if (!name) return;
-  var program = localStorage['saved-program-' + name];
-  if (program === undefined) {
-    alert("Program '" + name + "' is not found.");
-  } else {
-    this._input.value = program;
+  var self = this,
+      modal = $('.yaja-open-modal'),
+      savedPrograms = this._getSavedPrograms(),
+      tbody = $('.yaja-open-modal-body tbody').detach();
+  tbody.empty();
+  for (var i = 0; i < savedPrograms.names.length; ++i) {
+    var name = savedPrograms.names[i],
+        programSummary = savedPrograms.programs[name].substr(0, 80),
+        tr = $('<tr></tr>').data('program_name', name);
+    $('<td class="name">' + name + '</td>').appendTo(tr);
+    $('<td><code>' + programSummary + '</code></td>').appendTo(tr);
+    tr.click(function () {
+      tbody.find('.selected').removeClass('selected');
+      $(this).addClass('selected');
+    }).dblclick(function () {
+      self._loadProgram($(this).data('program_name'));
+      modal.modal('hide');
+      return false;
+    });
+    tr.appendTo(tbody);
   }
+  $('.yaja-open-modal-body table').append(tbody);
+  modal.modal();
+};
+
+App.prototype._initObjects = function () {
+  var self = this;
+  this._input = $('.yaja-input')[0];
+  this._$input = $(this._input);
+  var output = this._output = $('.yaja-output')[0];
+  this._out = {
+    print: function (str) {
+      output.value += str;
+      output.scrollTop = output.scrollHeight;
+    }
+  };
+  this._interpreter = new yaja.Interpreter();
+  this._interpreter.setOut(this._out);
+  this._storage = {
+    set: function (key, value) {
+      localStorage[self._storagePrefix + key] = value;
+    },
+    get: function (key) {
+      return localStorage[self._storagePrefix + key];
+    },
+    remove: function (key) {
+      delete localStorage[self._storagePrefix + key];
+    },
+    keys: function () {
+      var keys = [],
+          prefixPattern = RegExp('^' + self._storagePrefix + '(.*)$');
+      for (var key in localStorage) {
+        var m = key.match(prefixPattern);
+        if (m) keys.push(m[1]);
+      }
+      return keys;
+    }
+  };
 };
 
 App.prototype._bindActionListeners = function () {
@@ -142,13 +184,31 @@ App.prototype._bindInputListeners = function () {
   });
 };
 
+App.prototype._bindModalListeners = function () {
+  var self = this;
+  $('.yaja-open-modal-open').click(function () {
+    var tr = $('.yaja-open-modal-body .selected');
+    if (tr) {
+      self._loadProgram(tr.data('program_name'));
+      $('.yaja-open-modal').modal('hide');
+    }
+  });
+  $('.yaja-open-modal-delete').click(function () {
+    var tr = $('.yaja-open-modal-body .selected');
+    if (tr) {
+      self._removeProgram(tr.data('program_name'));
+      tr.remove();
+    }
+  });
+};
+
 App.prototype._startAutosaveLoop = function () {
   var self = this;
   this._autosaveLoopId = setInterval(function () {
-    var autosavedProgram = localStorage['autosave'],
+    var autosavedProgram = self._storage.get('autosave'),
         currentProgram = self._input.value;
     if (currentProgram == autosavedProgram) return;
-    localStorage['autosave'] = currentProgram;
+    self._storage.set('autosave', currentProgram);
     $('.yaja-autosave-status').text('Autosaved')
         .hide().fadeIn(200).delay(2000).fadeOut(400);
   }, 10000);
@@ -156,7 +216,7 @@ App.prototype._startAutosaveLoop = function () {
 
 App.prototype._loadAutosavedProgram = function () {
   if (this._input.value != '') return;
-  var autosavedProgram = localStorage['autosave'];
+  var autosavedProgram = this._storage.get('autosave');
   if (autosavedProgram !== undefined) this._input.value = autosavedProgram;
 };
 
@@ -167,6 +227,37 @@ App.prototype._getStatus = function () {
 App.prototype._setStatus = function (status) {
   this._status = status;
   $('.yaja-status').text(status);
+};
+
+App.prototype._saveProgram = function (name) {
+  this._storage.set('saved_program_' + name, this._input.value);
+};
+
+App.prototype._loadProgram = function (name) {
+  var program = this._storage.get('saved_program_' + name);
+  if (program === undefined) return;
+  this.reset();
+  this._input.value = program;
+};
+
+App.prototype._removeProgram = function (name) {
+  this._storage.remove('saved_program_' + name);
+};
+
+App.prototype._getSavedPrograms = function () {
+  var keys = this._storage.keys(),
+      names = [],
+      programs = {};
+  for (var i = 0; i < keys.length; ++i) {
+    var key = keys[i],
+        m = key.match(/^saved_program_(.*)$/);
+    if (m) {
+      names.push(m[1]);
+      programs[m[1]] = this._storage.get(key);
+    }
+  }
+  names.sort();
+  return {names: names, programs: programs};
 };
 
 App.prototype._startLoop = function () {

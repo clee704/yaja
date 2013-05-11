@@ -3,7 +3,6 @@ body {
   font-family: Verdana, sans-serif;
   line-height: 1.667em;
   padding: 0;
-  color: white;
   background-color: #00409c;
 }
 
@@ -49,6 +48,48 @@ textarea[readonly] {
 
 .btn-group + .btn-group {
   margin-left: 0;
+}
+
+.yaja-controls, .yaja-status-bar {
+  color: white;
+}
+
+.modal-header h3 {
+  font-size: 22px;
+}
+
+.yaja-open-modal-body table {
+  table-layout: fixed;
+}
+
+.yaja-open-modal-body tbody tr {
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.yaja-open-modal-body tbody tr.selected {
+  background-color: #0088cc;
+  color: white;
+}
+
+.yaja-open-modal-body td {
+  vertical-align: middle;
+}
+
+.yaja-open-modal-body .name {
+  width: 30%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.yaja-open-modal-body code {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  display: block;
 }
 
 .yaja-status-bar {
