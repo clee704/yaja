@@ -51,10 +51,9 @@ App.prototype.run = function () {
 
 App.prototype.pause = function () {
   var status = this._getStatus();
-  if (status == 'Paused') return;
+  if (status != 'Running') return;
   this._setStatus('Paused');
   this._stopLoop();
-  if (status == 'Idle') this._interpreter.setProgram(this._input.value);
 };
 
 App.prototype.reset = function () {
