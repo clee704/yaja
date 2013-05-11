@@ -335,7 +335,8 @@ App.prototype._configureLayout = function () {
 function OpenModal(app) {
   this._app = app;
   this._modal = $('.yaja-open-modal');
-  this._table = $('.yaja-open-modal-body table');
+  this._body = $('.yaja-open-modal-body');
+  this._table = this._body.find('table');
   this._tbody = this._table.find('tbody');
   this._bindListeners();
 }
@@ -353,6 +354,14 @@ OpenModal.prototype._select = function (index) {
   if (this._selectedRow) this._selectedRow.tr.removeClass('selected');
   this._selectedRow = this._data[index];
   this._selectedRow.tr.addClass('selected');
+  var top = this._selectedRow.tr.position().top,
+      bottom = top + this._selectedRow.tr.height(),
+      containerHeight = this._body.height();
+  if (bottom > containerHeight) {
+    this._body.scrollTop(this._body.scrollTop() + bottom - containerHeight);
+  } else if (top < 0) {
+    this._body.scrollTop(this._body.scrollTop() + top);
+  }
 };
 
 OpenModal.prototype._selectedIndex = function () {
