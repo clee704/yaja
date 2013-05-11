@@ -52,7 +52,8 @@ textarea[readonly] {
 }
 
 .yaja-status-bar {
-  padding: 5px;
+  padding: 3px 5px;
+  font-size: 0.9em;
 }
 
 .yaja-pane {
