@@ -383,6 +383,11 @@ OpenModal.prototype._removeProgram = function () {
   }
   this._selectedRow.tr.remove();
   this._selectedRow = undefined;
+  if (this._data.length == 0) this._addEmptyRow();
+};
+
+OpenModal.prototype._addEmptyRow = function () {
+  this._tbody.append('<tr><td class="empty" colspan="2">No saved programs</td></tr>');
 };
 
 OpenModal.prototype._updateTable = function () {
@@ -392,7 +397,7 @@ OpenModal.prototype._updateTable = function () {
       tbody = this._tbody.detach();
   tbody.empty();
   if (data.length == 0) {
-    tbody.append('<td class="empty" colspan="2">No saved programs</td>');
+    this._addEmptyRow();
   } else {
     for (var i = 0; i < data.length; ++i) {
       var row = data[i],
