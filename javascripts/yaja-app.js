@@ -11,6 +11,7 @@ function App(config) {
   }, config);
   this._currentLoopId = 0;
   this._input = $('.yaja-input')[0];
+  this._$input = $(this._input);
   var output = this._output = $('.yaja-output')[0];
   this._out = {
     print: function (str) {
@@ -84,6 +85,7 @@ App.prototype._bindListeners = function () {
       $(window).add('textarea').bind('keydown', shortcuts[name], act.func);
     }
   }
+  this._$input.keypress(function (e) { return self._keypress(e); });
 };
 
 App.prototype._getStatus = function () {
@@ -116,14 +118,21 @@ App.prototype._stopLoop = function () {
   ++this._currentLoopId;
 };
 
-App.prototype._getFullWidthChar = function (c) {
-  var charCode = c.charCodeAt(0);
+App.prototype._getFullWidthChar = function (charCode) {
   if (charCode >= 33 && charCode <= 270) {
     return String.fromCharCode(charCode + 65248);
   } else if (charCode == 32) {
     return String.fromCharCode(12288);
   } else {
-    return c;
+    return;  // undefined
+  }
+};
+
+App.prototype._keypress = function (e) {
+  var fullWidthChar = this._getFullWidthChar(e.which);
+  if (fullWidthChar !== undefined) {
+    this._$input.replaceSelectedText(fullWidthChar);
+    return false;
   }
 };
 
