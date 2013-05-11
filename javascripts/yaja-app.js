@@ -31,7 +31,10 @@ function App(config) {
   };
   this._interpreter = new yaja.Interpreter();
   this._interpreter.setOut(this._out);
-  this._bindListeners();
+  this._bindActionListeners();
+  this._bindInputListeners();
+  this._startAutosaveLoop();
+  this._loadAutosavedProgram();
   this._setStatus('Idle');
   this._updateRuler();
   this._updateCodeSize();
@@ -68,7 +71,24 @@ App.prototype.clearOutput = function () {
   this._output.value = '';
 };
 
-App.prototype._bindListeners = function () {
+App.prototype.save = function () {
+  var name = prompt('Program name:');
+  if (!name) return;
+  localStorage['saved-program-' + name] = this._input.value;
+};
+
+App.prototype.open = function () {
+  var name = prompt('Program name:');
+  if (!name) return;
+  var program = localStorage['saved-program-' + name];
+  if (program === undefined) {
+    alert("Program '" + name + "' is not found.");
+  } else {
+    this._input.value = program;
+  }
+};
+
+App.prototype._bindActionListeners = function () {
   var self = this,
       shortcuts = this.config.shortcuts,
       actions = {
@@ -83,6 +103,14 @@ App.prototype._bindListeners = function () {
         "reset": {
           func: function () { self.reset(); return false; },
           htmlClass: ".yaja-reset"
+        },
+        "save": {
+          func: function () { self.save(); return false; },
+          htmlClass: ".yaja-save"
+        },
+        "open": {
+          func: function () { self.open(); return false; },
+          htmlClass: ".yaja-open"
         }
       };
   for (var name in actions) {
@@ -95,6 +123,10 @@ App.prototype._bindListeners = function () {
       $(window).add('textarea').bind('keydown', shortcuts[name], act.func);
     }
   }
+};
+
+App.prototype._bindInputListeners = function () {
+  var self = this;
   this._$input.keypress(function (e) {
     // In Firefox, special keys also trigger keypress events; so filter them
     var c = e.which;
@@ -109,6 +141,24 @@ App.prototype._bindListeners = function () {
     self._updateRuler();
     self._updateCodeSize();
   });
+};
+
+App.prototype._startAutosaveLoop = function () {
+  var self = this;
+  this._autosaveLoopId = setInterval(function () {
+    var autosavedProgram = localStorage['autosave'],
+        currentProgram = self._input.value;
+    if (currentProgram == autosavedProgram) return;
+    localStorage['autosave'] = currentProgram;
+    $('.yaja-autosave-status').text('Autosaved')
+        .hide().fadeIn(200).delay(2000).fadeOut(400);
+  }, 10000);
+};
+
+App.prototype._loadAutosavedProgram = function () {
+  if (this._input.value != '') return;
+  var autosavedProgram = localStorage['autosave'];
+  if (autosavedProgram !== undefined) this._input.value = autosavedProgram;
 };
 
 App.prototype._getStatus = function () {

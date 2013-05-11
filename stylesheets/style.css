@@ -52,8 +52,27 @@ textarea[readonly] {
 }
 
 .yaja-status-bar {
-  padding: 3px 5px;
+  padding: 3px 0;
+  height: 20px;
   font-size: 0.9em;
+  position: relative;
+  overflow: hidden;
+}
+
+.yaja-status-bar-left {
+  position: absolute;
+  z-index: 10;
+  padding: 0 5px;
+  background-color: #00409c;
+  -webkit-box-shadow: 0 0 5px 5px #00409c;
+  box-shadow: 0 0 5px 5px #00409c;
+}
+
+.yaja-status-bar-right {
+  position: absolute;
+  z-index: 5;
+  padding: 0 5px;
+  right: 0;
 }
 
 .yaja-pane {

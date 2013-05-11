@@ -41,7 +41,7 @@
         <button class="btn btn-small btn-success yaja-save">
           <i class="icon icon-plus icon-white"></i> Save
         </button>
-        <button class="btn btn-small btn-success yaja-save">
+        <button class="btn btn-small btn-success yaja-open">
           <i class="icon icon-folder-open icon-white"></i> Open
         </button>
       </div>
@@ -58,11 +58,12 @@
     </div>
   </div>
   <div class="ui-layout-south">
-    <div class="yaja-status-bar clearfix">
-      <div class="pull-left">
+    <div class="yaja-status-bar">
+      <div class="yaja-status-bar-left">
         <span class="yaja-status"></span>
       </div>
-      <div class="pull-right">
+      <div class="yaja-status-bar-right">
+        <span class="yaja-autosave-status"></span>
         <span class="yaja-code-size"></span>
         |
         <span class="yaja-ruler"></span>
@@ -71,6 +72,7 @@
   </div>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+  <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
   <script src="vendor/jquery.layout-latest.min.js"></script>
   <script src="vendor/jquery.hotkeys.min.js"></script>
   <script src="vendor/rangyinputs_jquery.min.js"></script>
