@@ -85,7 +85,11 @@ App.prototype._bindListeners = function () {
       $(window).add('textarea').bind('keydown', shortcuts[name], act.func);
     }
   }
-  this._$input.keypress(function (e) { return self._keypress(e); });
+  this._$input.keypress(function (e) {
+    return self._convertKeypressToFullWidth(e.which);
+  }).keyup(function () {
+    self._updateRuler();
+  });
 };
 
 App.prototype._getStatus = function () {
@@ -94,7 +98,7 @@ App.prototype._getStatus = function () {
 
 App.prototype._updateStatusBar = function (status) {
   this._status = status;
-  $('.yaja-status-bar').text(status);
+  $('.yaja-status').text(status);
 };
 
 App.prototype._startLoop = function () {
@@ -128,12 +132,27 @@ App.prototype._getFullWidthChar = function (charCode) {
   }
 };
 
-App.prototype._keypress = function (e) {
-  var fullWidthChar = this._getFullWidthChar(e.which);
+App.prototype._convertKeypressToFullWidth = function (charCode) {
+  var fullWidthChar = this._getFullWidthChar(charCode);
   if (fullWidthChar !== undefined) {
     this._$input.replaceSelectedText(fullWidthChar);
     return false;
   }
+};
+
+App.prototype._updateRuler = function () {
+  var s = this._$input.getSelection(),
+      text;
+  if (s.start != s.end) {
+    text = ''
+  } else {
+    var index = s.end,
+        lines = this._input.value.substr(0, index).split('\n'),
+        line = lines.length,
+        col = lines[lines.length - 1].length + 1;
+    text = 'Line ' + line + ', Column ' + col;
+  }
+  $('.yaja-ruler').text(text);
 };
 
 App.prototype._configureLayout = function () {
