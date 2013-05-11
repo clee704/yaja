@@ -342,6 +342,8 @@ function OpenModal(app) {
 }
 
 OpenModal.prototype.open = function () {
+  if (this._app._modalOpen) return;
+  this._app._modalOpen = true;
   this._updateTable();
   this._modal.modal();
 };
@@ -438,6 +440,7 @@ OpenModal.prototype._bindListeners = function () {
   $('.yaja-open-modal-delete').click(function () { self._removeProgram(); });
   this._modal.bind('hidden', function () {
     self._app._focusInput();
+    self._app._modalOpen = false;
   }).keydown(function (e) {
     var c = e.which,
         n = self._data.length;
@@ -475,6 +478,8 @@ function SaveModal(app) {
 }
 
 SaveModal.prototype.open = function () {
+  if (this._app._modalOpen) return;
+  this._app._modalOpen = true;
   this._modal.modal();
 };
 
@@ -502,6 +507,7 @@ SaveModal.prototype._bindListeners = function () {
     input.focus().setSelection(0, input.val().length);
   }).bind('hidden', function () {
     self._app._focusInput();
+    self._app._modalOpen = false;
   }).keydown(function (e) {
     var c = e.which;
     switch (c) {
