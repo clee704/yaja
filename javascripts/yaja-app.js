@@ -71,13 +71,7 @@ App.prototype.open = function () {
 };
 
 App.prototype.save = function () {
-  var name = prompt('Program name:');
-  if (!name) return;
-  if (this._getSavedProgram(name)) {
-    var overwrite = confirm("Program '" + name + "' already exists. Do you want to replace it?");
-    if (!overwrite) return;
-  }
-  this._saveProgram(name);
+  this._saveModal.open();
 };
 
 App.prototype.clearOutput = function () {
@@ -118,6 +112,7 @@ App.prototype._initObjects = function () {
     }
   };
   this._openModal = new OpenModal(this);
+  this._saveModal = new SaveModal(this);
 };
 
 App.prototype._bindActionListeners = function () {
@@ -449,6 +444,55 @@ OpenModal.prototype._bindListeners = function () {
       return false;
     case KEY_CODE.RETURN:
       self.loadProgram();
+      return false;
+    case KEY_CODE.ESCAPE:
+      self.close();
+      return false;
+    default:
+      return;
+    }
+  });
+};
+
+function SaveModal(app) {
+  this._app = app;
+  this._modal = $('.yaja-save-modal');
+  this._bindListeners();
+}
+
+SaveModal.prototype.open = function () {
+  this._modal.modal();
+};
+
+SaveModal.prototype.close = function () {
+  this._modal.modal('hide');
+};
+
+SaveModal.prototype._save = function () {
+  var app = this._app,
+      name = $('.yaja-save-modal-name').val();
+  if (!name) return;
+  if (app._getSavedProgram(name)) {
+    var overwrite = confirm("Program '" + name + "' already exists. Do you want to replace it?");
+    if (!overwrite) return;
+  }
+  app._saveProgram(name);
+  this.close();
+};
+
+SaveModal.prototype._bindListeners = function () {
+  var self = this;
+  $('.yaja-save-modal-save').click(function () { self._save(); });
+  this._modal.bind('shown', function () {
+    var input = $(this).find('input');
+    input.focus().setSelection(0, input.val().length);
+  }).bind('hidden', function () {
+    self._app._focusInput();
+  }).keydown(function (e) {
+    var c = e.which;
+    switch (c) {
+    case KEY_CODE.RETURN:
+      self._save();
       return false;
     case KEY_CODE.ESCAPE:
       self.close();
