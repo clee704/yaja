@@ -92,6 +92,10 @@ textarea[readonly] {
   display: block;
 }
 
+.yaja-open-modal-body .empty {
+  text-align: center;
+}
+
 .yaja-status-bar {
   padding: 3px 0;
   height: 20px;

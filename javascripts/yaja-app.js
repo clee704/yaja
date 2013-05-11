@@ -76,21 +76,25 @@ App.prototype.open = function () {
       savedPrograms = this._getSavedPrograms(),
       tbody = $('.yaja-open-modal-body tbody').detach();
   tbody.empty();
-  for (var i = 0; i < savedPrograms.names.length; ++i) {
-    var name = savedPrograms.names[i],
-        programSummary = savedPrograms.programs[name].substr(0, 80),
-        tr = $('<tr></tr>').data('program_name', name);
-    $('<td class="name">' + name + '</td>').appendTo(tr);
-    $('<td><code>' + programSummary + '</code></td>').appendTo(tr);
-    tr.click(function () {
-      tbody.find('.selected').removeClass('selected');
-      $(this).addClass('selected');
-    }).dblclick(function () {
-      self._loadProgram($(this).data('program_name'));
-      modal.modal('hide');
-      return false;
-    });
-    tr.appendTo(tbody);
+  if (savedPrograms.names.length == 0) {
+    tbody.append('<td class="empty" colspan="2">No saved programs</td>');
+  } else {
+    for (var i = 0; i < savedPrograms.names.length; ++i) {
+      var name = savedPrograms.names[i],
+          programSummary = savedPrograms.programs[name].substr(0, 80),
+          tr = $('<tr></tr>').data('program_name', name);
+      $('<td class="name">' + name + '</td>').appendTo(tr);
+      $('<td><code>' + programSummary + '</code></td>').appendTo(tr);
+      tr.click(function () {
+        tbody.find('.selected').removeClass('selected');
+        $(this).addClass('selected');
+      }).dblclick(function () {
+        self._loadProgram($(this).data('program_name'));
+        modal.modal('hide');
+        return false;
+      });
+      tr.appendTo(tbody);
+    }
   }
   $('.yaja-open-modal-body table').append(tbody);
   modal.modal();
