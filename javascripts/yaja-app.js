@@ -45,7 +45,7 @@ App.prototype.run = function () {
   var status = this._getStatus();
   if (status == 'Running') return;
   this._setStatus('Running');
-  if (status == 'Idle' || status == 'Terminated') {
+  if (status != 'Paused') {
     this.clearOutput();
     this._interpreter.setProgram(this._input.value);
   }
@@ -64,7 +64,6 @@ App.prototype.reset = function () {
   this._setStatus('Reset');
   this._stopLoop();
   this.clearOutput();
-  this._interpreter.setProgram(this._input.value);
 };
 
 App.prototype.clearOutput = function () {
