@@ -10,11 +10,8 @@ footer {
 }
 
 textarea {
+  white-space: nowrap;
   font-family: '나눔고딕코딩', 'Nanum Gothic Coding', '굴림체', 'GulimChe', monospace;
   font-size: 12px;
-  white-space: nowrap;
-}
-
-.yaja-controls {
-  margin-bottom: 10px;
+  line-height: 16px;
 }

@@ -11,7 +11,7 @@
   <![endif]-->
 </head>
 <body>
-  <div class="container">
+  <div class="container-fluid">
     <h1>Yaja: Aheui Interpreter</h1>
     <section>
       <div class="btn-toolbar yaja-controls">
@@ -37,13 +37,17 @@
             <i class="icon icon-folder-open icon-white"></i> Open
           </button>
         </div>
-        <button class="btn btn-small yaja-clear-output">
-          <i class="icon icon-ban-circle"></i> <span>Clear Output</span>
-        </button>
+        <div class="btn-group">
+          <button class="btn btn-small yaja-clear-output">
+            <i class="icon icon-ban-circle"></i> <span>Clear Output</span>
+          </button>
+        </div>
       </div>
       <div class="yaja-program-name"></div>
-      <textarea class="input-block-level yaja-input" rows="12"></textarea>
-      <textarea class="input-block-level yaja-output" rows="12" readonly></textarea>
+      <div class="yaja-textareas">
+        <textarea class="input-block-level yaja-input" rows="12"></textarea>
+        <textarea class="input-block-level yaja-output" rows="12" readonly></textarea>
+      </div>
       <div class="yaja-status-bar"></div>
     </section>
     <footer>
