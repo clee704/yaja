@@ -295,6 +295,8 @@ App.prototype._configureLayout = function () {
       center: {
         fxSpeed: "fast",
         childOptions: {
+          spacing_open: Modernizr.touch ? 12 : 6,
+          spacing_closed: Modernizr.touch ? 12 : 6,
           center: {
             paneSelector: ".ui-layout-upper-center",
             minSize: 100
