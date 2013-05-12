@@ -1,5 +1,6 @@
 var yaja = typeof yaja === 'undefined' ? {} : yaja;
 (function (yaja, $, undefined) {
+"use strict";
 
 var KEY_CODE = {
   BACKSPACE: 8,

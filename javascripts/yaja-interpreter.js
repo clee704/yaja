@@ -1,5 +1,6 @@
 var yaja = typeof yaja === 'undefined' ? {} : yaja;
 (function (yaja, undefined) {
+"use strict";
 
 // Intials: ㄱ ㄲ ㄴ ㄷ ㄸ ㄹ ㅁ ㅂ ㅃ ㅅ ㅆ ㅇ ㅈ ㅉ ㅊ ㅋ ㅌ ㅍ ㅎ
 // Command codes
@@ -36,7 +37,7 @@ var FORCE = 0,
     INERTIA = 28;  // 0b011100
 // Speed (bit 5)
 var ONE = 0,
-    TWO = 32;
+    TWO = 32,
     SPEED = 32;  // 0b100000
 // Movements
 var MOVEMENTS = [RIGHT | ONE, SAME, RIGHT | TWO, SAME, LEFT | ONE, SAME,
@@ -103,7 +104,7 @@ Interpreter.prototype.run = function (maxInstructions) {
       currentInstructionCount = 0;
   while (maxInstructions === undefined ||
          currentInstructionCount < maxInstructions) {
-    var row = code[index[0]];
+    var row = code[index[0]],
         instruction = row[index[1]];
     if (instruction !== undefined) {
       var commandCode = instruction[0],
@@ -200,6 +201,7 @@ Interpreter.prototype.run = function (maxInstructions) {
     // Move to the next instruction
     var inc = process.speed == ONE ? 1 : 2,
         width = row.length,
+        height = process.height,
         x;
     switch (process.direction) {
       case UP:    x = index[0] - inc; index[0] = x < 0 ? height - 1 : x; break;
@@ -212,7 +214,7 @@ Interpreter.prototype.run = function (maxInstructions) {
 };
 
 Interpreter.prototype._parse = function (program) {
-  var lines = program.split('\n')
+  var lines = program.split('\n'),
       height = lines.length,
       rows = [];
   for (var i = 0; i < height; ++i) {

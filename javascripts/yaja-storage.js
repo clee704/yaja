@@ -1,5 +1,6 @@
 var yaja = typeof yaja === 'undefined' ? {} : yaja;
 (function (window, yaja, undefined) {
+"use strict";
 
 var Stack = Array;
 
