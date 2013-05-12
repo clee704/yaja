@@ -219,7 +219,7 @@ App.prototype._getSavedPrograms = function () {
   return {names: names, programs: programs};
 };
 
-App.prototype._focusInput = function () {
+App.prototype._focusEditor = function () {
   this._editor.focus();
 };
 
@@ -444,7 +444,7 @@ OpenModal.prototype._bindListeners = function () {
   $('.yaja-open-modal-open').click(function () { self._loadProgram(); });
   $('.yaja-open-modal-delete').click(function () { self._removeProgram(); });
   this._modal.bind('hidden', function () {
-    self._app._focusInput();
+    self._app._focusEditor();
     self._app._modalOpen = false;
   }).keydown(function (e) {
     var c = e.which,
@@ -515,7 +515,7 @@ SaveModal.prototype._bindListeners = function () {
   this._modal.bind('shown', function () {
     $(this).find('input').focus();
   }).bind('hidden', function () {
-    self._app._focusInput();
+    self._app._focusEditor();
     self._app._modalOpen = false;
   }).keydown(function (e) {
     var c = e.which;
