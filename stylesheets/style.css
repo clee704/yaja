@@ -59,6 +59,12 @@ textarea[readonly] {
   margin-left: 0;
 }
 
+@media (max-width: 479px) {
+  .btn .text {
+    display: none;
+  }
+}
+
 .yaja-controls, .yaja-status-bar {
   color: white;
 }
