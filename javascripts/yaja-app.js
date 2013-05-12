@@ -308,7 +308,7 @@ App.prototype._updateCodeSize = function () {
 };
 
 App.prototype._configureLayout = function () {
-  $(document).ready(function () {
+  $(function () {
     $('body').layout({
       spacing_open: 1,
       north: {
