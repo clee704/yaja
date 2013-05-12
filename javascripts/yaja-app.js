@@ -48,7 +48,7 @@ App.prototype.run = function () {
   this._setStatus('Running');
   if (status != 'Paused') {
     this.clearOutput();
-    this._interpreter.setProgram(this._input.value);
+    this._interpreter.setProgram(this._editor.getText());
   }
   this._startLoop();
 };
@@ -81,8 +81,7 @@ App.prototype.clearOutput = function () {
 
 App.prototype._initObjects = function () {
   var self = this;
-  this._input = $('.yaja-input')[0];
-  this._$input = $(this._input);
+  this._editor = new Editor;
   var output = this._output = $('.yaja-output')[0];
   this._out = {
     print: function (str) {
@@ -155,19 +154,22 @@ App.prototype._bindActionListeners = function () {
 
 App.prototype._bindInputListeners = function () {
   var self = this;
-  this._$input.keypress(function (e) {
-    // In Firefox, special keys also trigger keypress events; so filter them
-    var c = e.which;
-    if (e.metaKey || e.altKey || e.ctrlKey ||
-        c == KEY_CODE.IME || c == 0 || c == KEY_CODE.BACKSPACE ||
-        c == KEY_CODE.TAB || c == KEY_CODE.PAUSE_BREAK ||
-        c == KEY_CODE.CAPS_LOCK || c == KEY_CODE.SCROLL_LOCK) {
-      return;
+  this._editor.bind({
+    keypress: function (e) {
+      // In Firefox, special keys also trigger keypress events; so filter them
+      var c = e.which;
+      if (e.metaKey || e.altKey || e.ctrlKey ||
+          c == KEY_CODE.IME || c == 0 || c == KEY_CODE.BACKSPACE ||
+          c == KEY_CODE.TAB || c == KEY_CODE.PAUSE_BREAK ||
+          c == KEY_CODE.CAPS_LOCK || c == KEY_CODE.SCROLL_LOCK) {
+        return;
+      }
+      return self._convertKeypressToFullWidth(e.which);
+    },
+    keyup: function () {
+      self._updateRuler();
+      self._updateCodeSize();
     }
-    return self._convertKeypressToFullWidth(e.which);
-  }).keyup(function () {
-    self._updateRuler();
-    self._updateCodeSize();
   });
 };
 
@@ -175,7 +177,7 @@ App.prototype._startAutosaveLoop = function () {
   var self = this;
   this._autosaveLoopId = setInterval(function () {
     var autosavedProgram = self._storage.get('autosave'),
-        currentProgram = self._input.value;
+        currentProgram = self._editor.getText();
     if (currentProgram == autosavedProgram) return;
     self._storage.set('autosave', currentProgram);
     $('.yaja-autosave-status').text('Autosaved')
@@ -184,7 +186,7 @@ App.prototype._startAutosaveLoop = function () {
 };
 
 App.prototype._loadAutosavedProgram = function () {
-  if (this._input.value != '') return;
+  if (this._editor.getText() != '') return;
   this._loadProgram(this._storage.get('autosave'));
 };
 
@@ -198,7 +200,7 @@ App.prototype._setStatus = function (status) {
 };
 
 App.prototype._saveProgram = function (name) {
-  this._storage.set('saved_program_' + name, this._input.value);
+  this._storage.set('saved_program_' + name, this._editor.getText());
 };
 
 App.prototype._getSavedProgram = function (name) {
@@ -212,7 +214,7 @@ App.prototype._loadSavedProgram = function (name) {
 App.prototype._loadProgram = function(program) {
   if (program === undefined) return;
   this.reset();
-  this._input.value = program;
+  this._editor.setText(program);
   this._updateRuler();
   this._updateCodeSize();
 };
@@ -238,7 +240,7 @@ App.prototype._getSavedPrograms = function () {
 };
 
 App.prototype._focusInput = function () {
-  this._$input.focus();
+  this._editor.focus();
 };
 
 App.prototype._startLoop = function () {
@@ -275,19 +277,19 @@ App.prototype._getFullWidthChar = function (charCode) {
 App.prototype._convertKeypressToFullWidth = function (charCode) {
   var fullWidthChar = this._getFullWidthChar(charCode);
   if (fullWidthChar !== undefined) {
-    this._$input.replaceSelectedText(fullWidthChar);
+    this._editor.replaceSelectedText(fullWidthChar);
     return false;
   }
 };
 
 App.prototype._updateRuler = function () {
-  var s = this._$input.getSelection(),
+  var s = this._editor.getSelection(),
       text;
   if (s.start != s.end) {
     text = (s.end - s.start) + ' characters selected';
   } else {
     var index = s.end,
-        lines = this._input.value.substr(0, index).split('\n'),
+        lines = this._editor.getText().substr(0, index).split('\n'),
         line = lines.length,
         col = lines[lines.length - 1].length + 1;
     text = 'Line ' + line + ', Column ' + col;
@@ -296,7 +298,7 @@ App.prototype._updateRuler = function () {
 };
 
 App.prototype._updateCodeSize = function () {
-  var program = this._input.value,
+  var program = this._editor.getText(),
       lines = program.split('\n'),
       chars = program.length - (lines.length - 1),
       height = chars == 0 ? 0 : lines.length,
@@ -335,6 +337,35 @@ App.prototype._configureLayout = function () {
       }
     });
   });
+};
+
+function Editor() {
+  this._input = $('.yaja-input')[0];
+  this._$input = $(this._input);
+}
+
+Editor.prototype.getText = function () {
+  return this._input.value;
+};
+
+Editor.prototype.setText = function (text) {
+  this._input.value = text;
+};
+
+Editor.prototype.bind = function () {
+  this._$input.bind.apply(this._$input, arguments);
+};
+
+Editor.prototype.focus = function () {
+  this._$input.focus();
+};
+
+Editor.prototype.getSelection = function () {
+  return this._$input.getSelection();
+};
+
+Editor.prototype.replaceSelectedText = function () {
+  this._$input.replaceSelectedText.apply(this._$input, arguments);
 };
 
 function OpenModal(app) {
@@ -424,8 +455,8 @@ OpenModal.prototype._updateTable = function () {
 };
 
 OpenModal.prototype._updateData = function () {
-  var savedPrograms = this._app._getSavedPrograms();
-  data = [];
+  var savedPrograms = this._app._getSavedPrograms(),
+      data = [];
   for (var i = 0; i < savedPrograms.names.length; ++i) {
     var name = savedPrograms.names[i],
         row = {
