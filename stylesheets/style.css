@@ -1,7 +1,7 @@
 body {
-  font-size: 12px;
+  font-size: 14px;
   font-family: Verdana, sans-serif;
-  line-height: 1.667em;
+  line-height: 20px;
   padding: 0;
   background-color: #00409c;
 }
@@ -9,17 +9,17 @@ body {
 h1 {
   display: inline-block;
   vertical-align: middle;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: normal;
   text-transform: uppercase;
-  line-height: 20px;
+  line-height: 30px;
   margin: 0 10px 5px 5px;
 }
 
 textarea, .CodeMirror {
   font-family: '나눔고딕코딩', 'Nanum Gothic Coding', '굴림체', 'GulimChe', monospace;
   font-size: 1em;
-  line-height: 16px;
+  line-height: 18px;
   height: 100%;
 }
 
@@ -48,7 +48,6 @@ textarea[readonly] {
 .btn-toolbar {
   margin: 5px 0 0;
   padding: 0 0 0 5px;
-  line-height: 20px;
 }
 
 .btn-group {
@@ -128,7 +127,7 @@ textarea[readonly] {
 .yaja-status-bar {
   padding: 3px 0;
   height: 20px;
-  font-size: 0.9em;
+  font-size: 0.85em;
   position: relative;
   overflow: hidden;
 }
