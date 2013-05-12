@@ -280,6 +280,13 @@ App.prototype._configureLayout = function () {
       }
     });
   });
+  if (iOS) {
+    $(window).load(function () {
+      setTimeout(function () {
+        $(window).resize();
+      }, 0);
+    });
+  }
 };
 
 function AbstractEditor() {}
