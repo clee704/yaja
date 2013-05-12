@@ -48,7 +48,7 @@ App.prototype.run = function () {
   this._setStatus('Running');
   if (status !== 'Paused') {
     this.clearOutput();
-    this._interpreter.setProgram(this._editor.getText());
+    this._interpreter.setProgram(this._editor.getValue());
   }
   this._startLoop();
 };
@@ -164,7 +164,7 @@ App.prototype._startAutosaveLoop = function () {
   var self = this;
   this._autosaveLoopId = setInterval(function () {
     var autosavedProgram = self._storage.get('autosave'),
-        currentProgram = self._editor.getText();
+        currentProgram = self._editor.getValue();
     if (currentProgram === autosavedProgram) return;
     self._storage.set('autosave', currentProgram);
     $('.yaja-autosave-status').text('Autosaved')
@@ -173,7 +173,7 @@ App.prototype._startAutosaveLoop = function () {
 };
 
 App.prototype._loadAutosavedProgram = function () {
-  if (this._editor.getText() !== '') return;
+  if (this._editor.getValue() !== '') return;
   this._loadProgram(this._storage.get('autosave'));
 };
 
@@ -187,7 +187,7 @@ App.prototype._setStatus = function (status) {
 };
 
 App.prototype._saveProgram = function (name) {
-  this._storage.set('saved_program_' + name, this._editor.getText());
+  this._storage.set('saved_program_' + name, this._editor.getValue());
 };
 
 App.prototype._getSavedProgram = function (name) {
@@ -201,7 +201,7 @@ App.prototype._loadSavedProgram = function (name) {
 App.prototype._loadProgram = function(program) {
   if (program === undefined) return;
   this.reset();
-  this._editor.setText(program);
+  this._editor.setValue(program);
   this._updateRuler();
   this._updateCodeSize();
 };
@@ -276,7 +276,7 @@ App.prototype._updateRuler = function () {
     text = (s.end - s.start) + ' characters selected';
   } else {
     var index = s.end,
-        lines = this._editor.getText().substr(0, index).split('\n'),
+        lines = this._editor.getValue().substr(0, index).split('\n'),
         line = lines.length,
         col = lines[lines.length - 1].length + 1;
     text = 'Line ' + line + ', Column ' + col;
@@ -285,7 +285,7 @@ App.prototype._updateRuler = function () {
 };
 
 App.prototype._updateCodeSize = function () {
-  var program = this._editor.getText(),
+  var program = this._editor.getValue(),
       lines = program.split('\n'),
       chars = program.length - (lines.length - 1),
       height = chars === 0 ? 0 : lines.length,
@@ -331,11 +331,11 @@ function Editor() {
   this._$input = $(this._input);
 }
 
-Editor.prototype.getText = function () {
+Editor.prototype.getValue = function () {
   return this._input.value;
 };
 
-Editor.prototype.setText = function (text) {
+Editor.prototype.setValue = function (text) {
   this._input.value = text;
 };
 
