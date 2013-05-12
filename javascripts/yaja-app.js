@@ -18,6 +18,30 @@ var KEY_CODE = {
   IME: 229
 };
 
+var iOS = (navigator.userAgent.match(/(iPad|iPhone|iPod)/g) ? true : false);
+
+function stretchCharacters(str) {
+  var temp = [],
+      n = str.length,
+      j = 0;
+  for (var i = 0; i < n; ++i) {
+    var charCode = str.charCodeAt(i),
+        newCode = null;
+    if (charCode >= 33 && charCode <= 270) {
+      newCode = charCode + 65248;
+    } else if (charCode === 32) {
+      newCode = 12288;
+    }
+    if (newCode !== null) {
+      if (j < i) temp.push(str.substring(j, i));
+      temp.push(String.fromCharCode(newCode));
+      j = i + 1;
+    }
+  }
+  if (j < n) temp.push(str.substring(j, n));
+  return temp.join('');
+}
+
 function App(config) {
   this.config = $.extend({
     // Define default config values here.
@@ -79,7 +103,6 @@ App.prototype.clearOutput = function () {
 App.prototype._initObjects = function () {
   var self = this;
   // CodeMirror doesn't work well with Korean keyboard (Hangul) on iPhone.
-  var iOS = (navigator.userAgent.match(/(iPad|iPhone|iPod)/g) ? true : false);
   this._editor = iOS ? new TextAreaEditor() : new CodeMirrorEditor();
   var output = this._output = $('.yaja-output')[0];
   this._out = {
@@ -273,28 +296,6 @@ AbstractEditor.prototype._updateCodeSize = function () {
   this._$codeSize.text(width + 'x' + height + ', ' + chars + ' characters');
 };
 
-AbstractEditor.prototype._stretchCharacters = function (str) {
-  var temp = [],
-      n = str.length,
-      j = 0;
-  for (var i = 0; i < n; ++i) {
-    var charCode = str.charCodeAt(i),
-        newCode = null;
-    if (charCode >= 33 && charCode <= 270) {
-      newCode = charCode + 65248;
-    } else if (charCode === 32) {
-      newCode = 12288;
-    }
-    if (newCode !== null) {
-      if (j < i) temp.push(str.substring(j, i));
-      temp.push(String.fromCharCode(newCode));
-      j = i + 1;
-    }
-  }
-  if (j < n) temp.push(str.substring(j, n));
-  return temp.join('');
-};
-
 function TextAreaEditor() {
   this._input = $('.yaja-input')[0];
   this._$input = $(this._input);
@@ -361,7 +362,7 @@ CodeMirrorEditor.prototype._bindListeners = function () {
     var text = changeObj.text,
         n = text.length;
     for (var i = 0; i < n; ++i) {
-      text[i] = self._stretchCharacters(text[i]);
+      text[i] = stretchCharacters(text[i]);
     }
     changeObj.update(undefined, undefined, text);
   });
