@@ -78,7 +78,9 @@ App.prototype.clearOutput = function () {
 
 App.prototype._initObjects = function () {
   var self = this;
-  this._editor = new Editor();
+  // CodeMirror doesn't work well with Korean keyboard (Hangul) on iPhone.
+  var iOS = (navigator.userAgent.match(/(iPad|iPhone|iPod)/g) ? true : false);
+  this._editor = iOS ? new TextAreaEditor() : new CodeMirrorEditor();
   var output = this._output = $('.yaja-output')[0];
   this._out = {
     print: function (str) {
@@ -257,51 +259,9 @@ App.prototype._configureLayout = function () {
   });
 };
 
-function Editor() {
-  this._input = $('.yaja-input')[0];
-  this._cm = CodeMirror.fromTextArea(this._input, {
-    lineNumbers: true
-  });
-  this._$ruler = $('.yaja-ruler');
-  this._$codeSize = $('.yaja-code-size');
-  this._bindListeners();
-  this._updateRuler();
-  this._updateCodeSize();
-}
+function AbstractEditor() {}
 
-Editor.prototype.getValue = function () {
-  return this._cm.getValue();
-};
-
-Editor.prototype.setValue = function (text) {
-  return this._cm.setValue(text);
-};
-
-Editor.prototype.focus = function () {
-  return this._cm.focus();
-};
-
-Editor.prototype._bindListeners = function () {
-  var self = this;
-  this._cm.on('beforeChange', function (cm, changeObj) {
-    var text = changeObj.text,
-        n = text.length;
-    for (var i = 0; i < n; ++i) {
-      text[i] = self._stretchCharacters(text[i]);
-    }
-    changeObj.update(undefined, undefined, text);
-  });
-  this._cm.on('cursorActivity', function () { self._updateRuler(); });
-  this._cm.on('change', function () { self._updateCodeSize(); });
-};
-
-Editor.prototype._updateRuler = function () {
-  var cursor = this._cm.getCursor(),
-      text = 'Line ' + (cursor.line + 1) + ', Column ' + (cursor.ch + 1);
-  this._$ruler.text(text);
-};
-
-Editor.prototype._updateCodeSize = function () {
+AbstractEditor.prototype._updateCodeSize = function () {
   var program = this.getValue(),
       lines = program.split('\n'),
       chars = program.length - (lines.length - 1),
@@ -313,7 +273,7 @@ Editor.prototype._updateCodeSize = function () {
   this._$codeSize.text(width + 'x' + height + ', ' + chars + ' characters');
 };
 
-Editor.prototype._stretchCharacters = function (str) {
+AbstractEditor.prototype._stretchCharacters = function (str) {
   var temp = [],
       n = str.length,
       j = 0;
@@ -333,6 +293,86 @@ Editor.prototype._stretchCharacters = function (str) {
   }
   if (j < n) temp.push(str.substring(j, n));
   return temp.join('');
+};
+
+function TextAreaEditor() {
+  this._input = $('.yaja-input')[0];
+  this._$input = $(this._input);
+  this._$codeSize = $('.yaja-code-size');
+  $('.yaja-separator-code-size-ruler').remove();
+  this._bindListeners();
+  this._updateCodeSize();
+}
+TextAreaEditor.prototype = new AbstractEditor();
+TextAreaEditor.prototype.constructor = TextAreaEditor;
+
+TextAreaEditor.prototype.getValue = function () {
+  return this._input.value;
+};
+
+TextAreaEditor.prototype.setValue = function (value) {
+  this._input.value = value;
+  // textarea doesn't fire change event when value is set programmatically
+  this._updateCodeSize();
+};
+
+TextAreaEditor.prototype.focus = function () {
+  this._$input.focus();
+};
+
+TextAreaEditor.prototype._bindListeners = function () {
+  var self = this;
+  this._$input.change(function () { self._updateCodeSize(); });
+};
+
+function CodeMirrorEditor() {
+  // CodeMirror offers following features:
+  // * Line numbers at the left
+  // * Detect cursor movement and get current cursor position
+  // * Convert characters being inserted
+  this._input = $('.yaja-input')[0];
+  this._cm = CodeMirror.fromTextArea(this._input, {
+    lineNumbers: true
+  });
+  this._$ruler = $('.yaja-ruler');
+  this._$codeSize = $('.yaja-code-size');
+  this._bindListeners();
+  this._updateRuler();
+  this._updateCodeSize();
+}
+CodeMirrorEditor.prototype = new AbstractEditor();
+CodeMirrorEditor.prototype.constructor = CodeMirrorEditor;
+
+CodeMirrorEditor.prototype.getValue = function () {
+  return this._cm.getValue();
+};
+
+CodeMirrorEditor.prototype.setValue = function (value) {
+  this._cm.setValue(value);
+};
+
+CodeMirrorEditor.prototype.focus = function () {
+  this._cm.focus();
+};
+
+CodeMirrorEditor.prototype._bindListeners = function () {
+  var self = this;
+  this._cm.on('beforeChange', function (cm, changeObj) {
+    var text = changeObj.text,
+        n = text.length;
+    for (var i = 0; i < n; ++i) {
+      text[i] = self._stretchCharacters(text[i]);
+    }
+    changeObj.update(undefined, undefined, text);
+  });
+  this._cm.on('cursorActivity', function () { self._updateRuler(); });
+  this._cm.on('change', function () { self._updateCodeSize(); });
+};
+
+CodeMirrorEditor.prototype._updateRuler = function () {
+  var cursor = this._cm.getCursor(),
+      text = 'Line ' + (cursor.line + 1) + ', Column ' + (cursor.ch + 1);
+  this._$ruler.text(text);
 };
 
 function OpenModal(app) {
