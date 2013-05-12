@@ -141,23 +141,16 @@ App.prototype._bindActionListeners = function () {
 
 App.prototype._bindInputListeners = function () {
   var self = this;
-  this._editor.bind({
-    keypress: function (e) {
-      // In Firefox, special keys also trigger keypress events; so filter them
-      var c = e.which;
-      if (e.metaKey || e.altKey || e.ctrlKey ||
-          c === KEY_CODE.IME || c === 0 || c === KEY_CODE.BACKSPACE ||
-          c === KEY_CODE.TAB || c === KEY_CODE.PAUSE_BREAK ||
-          c === KEY_CODE.CAPS_LOCK || c === KEY_CODE.SCROLL_LOCK) {
-        return;
-      }
-      return self._convertKeypressToFullWidth(e.which);
-    },
-    keyup: function () {
-      self._updateRuler();
-      self._updateCodeSize();
+  this._editor.on('beforeChange', function (cm, changeObj) {
+    var text = changeObj.text,
+        n = text.length;
+    for (var i = 0; i < n; ++i) {
+      text[i] = self._stretchCharacters(text[i]);
     }
+    changeObj.update(undefined, undefined, text);
   });
+  this._editor.on('cursorActivity', function () { self._updateRuler(); });
+  this._editor.on('change', function () { self._updateCodeSize(); });
 };
 
 App.prototype._startAutosaveLoop = function () {
@@ -251,36 +244,31 @@ App.prototype._stopLoop = function () {
   ++this._currentLoopId;
 };
 
-App.prototype._getFullWidthChar = function (charCode) {
-  if (charCode >= 33 && charCode <= 270) {
-    return String.fromCharCode(charCode + 65248);
-  } else if (charCode === 32) {
-    return String.fromCharCode(12288);
-  } else {
-    return;  // undefined
+App.prototype._stretchCharacters = function (str) {
+  var temp = [],
+      n = str.length,
+      j = 0;
+  for (var i = 0; i < n; ++i) {
+    var charCode = str.charCodeAt(i),
+        newCode = null;
+    if (charCode >= 33 && charCode <= 270) {
+      newCode = charCode + 65248;
+    } else if (charCode === 32) {
+      newCode = 12288;
+    }
+    if (newCode !== null) {
+      if (j < i) temp.push(str.substring(j, i));
+      temp.push(String.fromCharCode(newCode));
+      j = i + 1;
+    }
   }
-};
-
-App.prototype._convertKeypressToFullWidth = function (charCode) {
-  var fullWidthChar = this._getFullWidthChar(charCode);
-  if (fullWidthChar !== undefined) {
-    this._editor.replaceSelectedText(fullWidthChar);
-    return false;
-  }
+  if (j < n) temp.push(str.substring(j, n));
+  return temp.join('');
 };
 
 App.prototype._updateRuler = function () {
-  var s = this._editor.getSelection(),
-      text;
-  if (s.start !== s.end) {
-    text = (s.end - s.start) + ' characters selected';
-  } else {
-    var index = s.end,
-        lines = this._editor.getValue().substr(0, index).split('\n'),
-        line = lines.length,
-        col = lines[lines.length - 1].length + 1;
-    text = 'Line ' + line + ', Column ' + col;
-  }
+  var cursor = this._editor.getCursor(),
+      text = 'Line ' + (cursor.line + 1) + ', Column ' + (cursor.ch + 1);
   $('.yaja-ruler').text(text);
 };
 
@@ -328,31 +316,29 @@ App.prototype._configureLayout = function () {
 
 function Editor() {
   this._input = $('.yaja-input')[0];
-  this._$input = $(this._input);
+  this._cm = CodeMirror.fromTextArea(this._input, {
+    lineNumbers: true
+  });
 }
 
 Editor.prototype.getValue = function () {
-  return this._input.value;
+  return this._cm.getValue();
 };
 
 Editor.prototype.setValue = function (text) {
-  this._input.value = text;
+  return this._cm.setValue(text);
 };
 
-Editor.prototype.bind = function () {
-  this._$input.bind.apply(this._$input, arguments);
+Editor.prototype.on = function () {
+  return this._cm.on.apply(this._cm, arguments);
 };
 
 Editor.prototype.focus = function () {
-  this._$input.focus();
+  return this._cm.focus();
 };
 
-Editor.prototype.getSelection = function () {
-  return this._$input.getSelection();
-};
-
-Editor.prototype.replaceSelectedText = function () {
-  this._$input.replaceSelectedText.apply(this._$input, arguments);
+Editor.prototype.getCursor = function () {
+  return this._cm.getCursor();
 };
 
 function OpenModal(app) {
@@ -527,8 +513,7 @@ SaveModal.prototype._bindListeners = function () {
   var self = this;
   $('.yaja-save-modal-save').click(function () { self._save(); });
   this._modal.bind('shown', function () {
-    var input = $(this).find('input');
-    input.focus().setSelection(0, input.val().length);
+    $(this).find('input').focus();
   }).bind('hidden', function () {
     self._app._focusInput();
     self._app._modalOpen = false;
