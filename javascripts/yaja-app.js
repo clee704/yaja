@@ -20,28 +20,6 @@ var KEY_CODE = {
 
 var iOS = (navigator.userAgent.match(/(iPad|iPhone|iPod)/g) ? true : false);
 
-function stretchCharacters(str) {
-  var temp = [],
-      n = str.length,
-      j = 0;
-  for (var i = 0; i < n; ++i) {
-    var charCode = str.charCodeAt(i),
-        newCode = null;
-    if (charCode >= 33 && charCode <= 270) {
-      newCode = charCode + 65248;
-    } else if (charCode === 32) {
-      newCode = 12288;
-    }
-    if (newCode !== null) {
-      if (j < i) temp.push(str.substring(j, i));
-      temp.push(String.fromCharCode(newCode));
-      j = i + 1;
-    }
-  }
-  if (j < n) temp.push(str.substring(j, n));
-  return temp.join('');
-}
-
 function App(config) {
   this.config = $.extend({
     // Define default config values here.
@@ -573,6 +551,28 @@ SaveModal.prototype._bindListeners = function () {
     }
   });
 };
+
+function stretchCharacters(str) {
+  var temp = [],
+      n = str.length,
+      j = 0;
+  for (var i = 0; i < n; ++i) {
+    var charCode = str.charCodeAt(i),
+        newCode = null;
+    if (charCode >= 33 && charCode <= 270) {
+      newCode = charCode + 65248;
+    } else if (charCode === 32) {
+      newCode = 12288;
+    }
+    if (newCode !== null) {
+      if (j < i) temp.push(str.substring(j, i));
+      temp.push(String.fromCharCode(newCode));
+      j = i + 1;
+    }
+  }
+  if (j < n) temp.push(str.substring(j, n));
+  return temp.join('');
+}
 
 yaja.App = App;
 
