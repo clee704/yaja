@@ -33,12 +33,9 @@ function App(config) {
   this._storagePrefix = 'yaja_';
   this._initObjects();
   this._bindActionListeners();
-  this._bindInputListeners();
   this._startAutosaveLoop();
   this._loadAutosavedProgram();
   this._setStatus('Idle');
-  this._updateRuler();
-  this._updateCodeSize();
   this._configureLayout();
 }
 
@@ -139,20 +136,6 @@ App.prototype._bindActionListeners = function () {
   }
 };
 
-App.prototype._bindInputListeners = function () {
-  var self = this;
-  this._editor.on('beforeChange', function (cm, changeObj) {
-    var text = changeObj.text,
-        n = text.length;
-    for (var i = 0; i < n; ++i) {
-      text[i] = self._stretchCharacters(text[i]);
-    }
-    changeObj.update(undefined, undefined, text);
-  });
-  this._editor.on('cursorActivity', function () { self._updateRuler(); });
-  this._editor.on('change', function () { self._updateCodeSize(); });
-};
-
 App.prototype._startAutosaveLoop = function () {
   var self = this;
   this._autosaveLoopId = setInterval(function () {
@@ -195,8 +178,6 @@ App.prototype._loadProgram = function(program) {
   if (program === undefined) return;
   this.reset();
   this._editor.setValue(program);
-  this._updateRuler();
-  this._updateCodeSize();
 };
 
 App.prototype._removeProgram = function (name) {
@@ -244,46 +225,6 @@ App.prototype._stopLoop = function () {
   ++this._currentLoopId;
 };
 
-App.prototype._stretchCharacters = function (str) {
-  var temp = [],
-      n = str.length,
-      j = 0;
-  for (var i = 0; i < n; ++i) {
-    var charCode = str.charCodeAt(i),
-        newCode = null;
-    if (charCode >= 33 && charCode <= 270) {
-      newCode = charCode + 65248;
-    } else if (charCode === 32) {
-      newCode = 12288;
-    }
-    if (newCode !== null) {
-      if (j < i) temp.push(str.substring(j, i));
-      temp.push(String.fromCharCode(newCode));
-      j = i + 1;
-    }
-  }
-  if (j < n) temp.push(str.substring(j, n));
-  return temp.join('');
-};
-
-App.prototype._updateRuler = function () {
-  var cursor = this._editor.getCursor(),
-      text = 'Line ' + (cursor.line + 1) + ', Column ' + (cursor.ch + 1);
-  $('.yaja-ruler').text(text);
-};
-
-App.prototype._updateCodeSize = function () {
-  var program = this._editor.getValue(),
-      lines = program.split('\n'),
-      chars = program.length - (lines.length - 1),
-      height = chars === 0 ? 0 : lines.length,
-      width = 0;
-  for (var i = 0; i < height; ++i) {
-    if (lines[i].length > width) width = lines[i].length;
-  }
-  $('.yaja-code-size').text(width + 'x' + height + ', ' + chars + ' characters');
-};
-
 App.prototype._configureLayout = function () {
   $(function () {
     $('body').layout({
@@ -321,6 +262,11 @@ function Editor() {
   this._cm = CodeMirror.fromTextArea(this._input, {
     lineNumbers: true
   });
+  this._$ruler = $('.yaja-ruler');
+  this._$codeSize = $('.yaja-code-size');
+  this._bindListeners();
+  this._updateRuler();
+  this._updateCodeSize();
 }
 
 Editor.prototype.getValue = function () {
@@ -331,16 +277,62 @@ Editor.prototype.setValue = function (text) {
   return this._cm.setValue(text);
 };
 
-Editor.prototype.on = function () {
-  return this._cm.on.apply(this._cm, arguments);
-};
-
 Editor.prototype.focus = function () {
   return this._cm.focus();
 };
 
-Editor.prototype.getCursor = function () {
-  return this._cm.getCursor();
+Editor.prototype._bindListeners = function () {
+  var self = this;
+  this._cm.on('beforeChange', function (cm, changeObj) {
+    var text = changeObj.text,
+        n = text.length;
+    for (var i = 0; i < n; ++i) {
+      text[i] = self._stretchCharacters(text[i]);
+    }
+    changeObj.update(undefined, undefined, text);
+  });
+  this._cm.on('cursorActivity', function () { self._updateRuler(); });
+  this._cm.on('change', function () { self._updateCodeSize(); });
+};
+
+Editor.prototype._updateRuler = function () {
+  var cursor = this._cm.getCursor(),
+      text = 'Line ' + (cursor.line + 1) + ', Column ' + (cursor.ch + 1);
+  this._$ruler.text(text);
+};
+
+Editor.prototype._updateCodeSize = function () {
+  var program = this.getValue(),
+      lines = program.split('\n'),
+      chars = program.length - (lines.length - 1),
+      height = chars === 0 ? 0 : lines.length,
+      width = 0;
+  for (var i = 0; i < height; ++i) {
+    if (lines[i].length > width) width = lines[i].length;
+  }
+  this._$codeSize.text(width + 'x' + height + ', ' + chars + ' characters');
+};
+
+Editor.prototype._stretchCharacters = function (str) {
+  var temp = [],
+      n = str.length,
+      j = 0;
+  for (var i = 0; i < n; ++i) {
+    var charCode = str.charCodeAt(i),
+        newCode = null;
+    if (charCode >= 33 && charCode <= 270) {
+      newCode = charCode + 65248;
+    } else if (charCode === 32) {
+      newCode = 12288;
+    }
+    if (newCode !== null) {
+      if (j < i) temp.push(str.substring(j, i));
+      temp.push(String.fromCharCode(newCode));
+      j = i + 1;
+    }
+  }
+  if (j < n) temp.push(str.substring(j, n));
+  return temp.join('');
 };
 
 function OpenModal(app) {
