@@ -267,7 +267,9 @@ App.prototype._configureLayout = function () {
   }
 };
 
-function AbstractEditor() {}
+function AbstractEditor() {
+  this._$codeSize = $('.yaja-code-size');
+}
 
 AbstractEditor.prototype._updateCodeSize = function () {
   var program = this.getValue(),
@@ -284,7 +286,6 @@ AbstractEditor.prototype._updateCodeSize = function () {
 function TextAreaEditor() {
   this._input = $('.yaja-input')[0];
   this._$input = $(this._input);
-  this._$codeSize = $('.yaja-code-size');
   $('.yaja-separator-code-size-ruler').remove();
   this._bindListeners();
   this._updateCodeSize();
@@ -321,7 +322,6 @@ function CodeMirrorEditor() {
     lineNumbers: true
   });
   this._$ruler = $('.yaja-ruler');
-  this._$codeSize = $('.yaja-code-size');
   this._bindListeners();
   this._updateRuler();
   this._updateCodeSize();
