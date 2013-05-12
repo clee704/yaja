@@ -44,9 +44,9 @@ function App(config) {
 
 App.prototype.run = function () {
   var status = this._getStatus();
-  if (status == 'Running') return;
+  if (status === 'Running') return;
   this._setStatus('Running');
-  if (status != 'Paused') {
+  if (status !== 'Paused') {
     this.clearOutput();
     this._interpreter.setProgram(this._editor.getText());
   }
@@ -55,13 +55,13 @@ App.prototype.run = function () {
 
 App.prototype.pause = function () {
   var status = this._getStatus();
-  if (status != 'Running') return;
+  if (status !== 'Running') return;
   this._setStatus('Paused');
   this._stopLoop();
 };
 
 App.prototype.reset = function () {
-  if (this._getStatus() == 'Reset') return;
+  if (this._getStatus() === 'Reset') return;
   this._setStatus('Reset');
   this._stopLoop();
   this.clearOutput();
@@ -81,7 +81,7 @@ App.prototype.clearOutput = function () {
 
 App.prototype._initObjects = function () {
   var self = this;
-  this._editor = new Editor;
+  this._editor = new Editor();
   var output = this._output = $('.yaja-output')[0];
   this._out = {
     print: function (str) {
@@ -103,7 +103,7 @@ App.prototype._initObjects = function () {
     },
     keys: function () {
       var keys = [],
-          prefixPattern = RegExp('^' + self._storagePrefix + '(.*)$');
+          prefixPattern = new RegExp('^' + self._storagePrefix + '(.*)$');
       for (var key in localStorage) {
         var m = key.match(prefixPattern);
         if (m) keys.push(m[1]);
@@ -118,36 +118,23 @@ App.prototype._initObjects = function () {
 App.prototype._bindActionListeners = function () {
   var self = this,
       shortcuts = this.config.shortcuts,
-      actions = {
-        "run": {
-          func: function () { self.run(); return false; },
-          htmlClass: ".yaja-run"
-        },
-        "pause": {
-          func: function () { self.pause(); return false; },
-          htmlClass: ".yaja-pause"
-        },
-        "reset": {
-          func: function () { self.reset(); return false; },
-          htmlClass: ".yaja-reset"
-        },
-        "open": {
-          func: function () { self.open(); return false; },
-          htmlClass: ".yaja-open"
-        },
-        "save": {
-          func: function () { self.save(); return false; },
-          htmlClass: ".yaja-save"
-        }
-      };
-  for (var name in actions) {
-    var act = actions[name],
-        button = $(act.htmlClass).click(act.func);
-    if (shortcuts[name]) {
+      actions = ['run', 'pause', 'reset', 'open', 'save'];
+  for (var i = 0; i < actions.length; ++i) {
+    var action = actions[i],
+        callback = (function () {
+          var methodName = action;
+          return function () {
+            self[methodName]();
+            return false;
+          };
+        })(),
+        button = $('.yaja-' + action).click(callback),
+        shortcut = shortcuts[action];
+    if (shortcut) {
       button.attr('title', function () {
-        return $(this).text().trim() + ' [' + shortcuts[name] + ']';
+        return $(this).text().trim() + ' [' + shortcut + ']';
       });
-      $(window).add('textarea').bind('keydown', shortcuts[name], act.func);
+      $(window).add('textarea').bind('keydown', shortcut, callback);
     }
   }
 };
@@ -159,9 +146,9 @@ App.prototype._bindInputListeners = function () {
       // In Firefox, special keys also trigger keypress events; so filter them
       var c = e.which;
       if (e.metaKey || e.altKey || e.ctrlKey ||
-          c == KEY_CODE.IME || c == 0 || c == KEY_CODE.BACKSPACE ||
-          c == KEY_CODE.TAB || c == KEY_CODE.PAUSE_BREAK ||
-          c == KEY_CODE.CAPS_LOCK || c == KEY_CODE.SCROLL_LOCK) {
+          c === KEY_CODE.IME || c === 0 || c === KEY_CODE.BACKSPACE ||
+          c === KEY_CODE.TAB || c === KEY_CODE.PAUSE_BREAK ||
+          c === KEY_CODE.CAPS_LOCK || c === KEY_CODE.SCROLL_LOCK) {
         return;
       }
       return self._convertKeypressToFullWidth(e.which);
@@ -178,7 +165,7 @@ App.prototype._startAutosaveLoop = function () {
   this._autosaveLoopId = setInterval(function () {
     var autosavedProgram = self._storage.get('autosave'),
         currentProgram = self._editor.getText();
-    if (currentProgram == autosavedProgram) return;
+    if (currentProgram === autosavedProgram) return;
     self._storage.set('autosave', currentProgram);
     $('.yaja-autosave-status').text('Autosaved')
         .hide().fadeIn(200).delay(2000).fadeOut(400);
@@ -186,7 +173,7 @@ App.prototype._startAutosaveLoop = function () {
 };
 
 App.prototype._loadAutosavedProgram = function () {
-  if (this._editor.getText() != '') return;
+  if (this._editor.getText() !== '') return;
   this._loadProgram(this._storage.get('autosave'));
 };
 
@@ -250,7 +237,7 @@ App.prototype._startLoop = function () {
       // as the calls.
       currentLoopId = ++this._currentLoopId,
       loop = function () {
-        if (currentLoopId != self._currentLoopId) return;
+        if (currentLoopId !== self._currentLoopId) return;
         if (interpreter.run(10000)) {  // Terminated
           self._setStatus('Terminated');
         } else {
@@ -267,7 +254,7 @@ App.prototype._stopLoop = function () {
 App.prototype._getFullWidthChar = function (charCode) {
   if (charCode >= 33 && charCode <= 270) {
     return String.fromCharCode(charCode + 65248);
-  } else if (charCode == 32) {
+  } else if (charCode === 32) {
     return String.fromCharCode(12288);
   } else {
     return;  // undefined
@@ -285,7 +272,7 @@ App.prototype._convertKeypressToFullWidth = function (charCode) {
 App.prototype._updateRuler = function () {
   var s = this._editor.getSelection(),
       text;
-  if (s.start != s.end) {
+  if (s.start !== s.end) {
     text = (s.end - s.start) + ' characters selected';
   } else {
     var index = s.end,
@@ -301,7 +288,7 @@ App.prototype._updateCodeSize = function () {
   var program = this._editor.getText(),
       lines = program.split('\n'),
       chars = program.length - (lines.length - 1),
-      height = chars == 0 ? 0 : lines.length,
+      height = chars === 0 ? 0 : lines.length,
       width = 0;
   for (var i = 0; i < height; ++i) {
     if (lines[i].length > width) width = lines[i].length;
@@ -417,11 +404,13 @@ OpenModal.prototype._removeProgram = function () {
   this._app._removeProgram(this._selectedRow.programName);
   this._data.splice(this._selectedRow.index, 1);
   for (var i = this._selectedRow.index; i < this._data.length; ++i) {
-    this._data[i].index = i;
+    var row = this._data[i];
+    row.index = i;
+    row.tr.data('index', i);
   }
   this._selectedRow.tr.remove();
   this._selectedRow = undefined;
-  if (this._data.length == 0) this._addEmptyRow();
+  if (this._data.length === 0) this._addEmptyRow();
 };
 
 OpenModal.prototype._addEmptyRow = function () {
@@ -430,11 +419,10 @@ OpenModal.prototype._addEmptyRow = function () {
 
 OpenModal.prototype._updateTable = function () {
   this._updateData();
-  var self = this,
-      data = this._data,
+  var data = this._data,
       tbody = this._tbody.detach();
   tbody.empty();
-  if (data.length == 0) {
+  if (data.length === 0) {
     this._addEmptyRow();
   } else {
     for (var i = 0; i < data.length; ++i) {
@@ -443,12 +431,7 @@ OpenModal.prototype._updateTable = function () {
       row.tr = tr;
       $('<td class="name">' + row.programName + '</td>').appendTo(tr);
       $('<td><code>' + row.programSummary + '</code></td>').appendTo(tr);
-      tr.click(function () {
-        self._select($(this).data('index'));
-      }).dblclick(function () {
-        self._select($(this).data('index'));
-        self._loadProgram();
-      }).appendTo(tbody);
+      tr.appendTo(tbody);
     }
   }
   this._table.append(tbody);
@@ -479,19 +462,17 @@ OpenModal.prototype._bindListeners = function () {
     self._app._modalOpen = false;
   }).keydown(function (e) {
     var c = e.which,
-        n = self._data.length;
-    if (n == 0) return;
+        n = self._data.length,
+        i = self._selectedIndex();
+    if (n === 0) return;
     switch (c) {
     case KEY_CODE.DOWN_ARROW:
-      var i = self._selectedIndex();
       self._select(i === undefined ? 0 : i < n - 1 ? i + 1 : 0);
       return false;
     case KEY_CODE.UP_ARROW:
-      var i = self._selectedIndex();
       self._select(i === undefined ? n - 1 : i > 0 ? i - 1 : n - 1);
       return false;
     case KEY_CODE.DELETE:
-      var i = self._selectedIndex();
       self._removeProgram();
       self._select(Math.min(i, n - 2));
       return false;
@@ -504,6 +485,12 @@ OpenModal.prototype._bindListeners = function () {
     default:
       return;
     }
+  });
+  this._tbody.on('click', 'tr', function () {
+    self._select($(this).data('index'));
+  }).on('dblclick', 'tr', function () {
+    self._select($(this).data('index'));
+    self._loadProgram();
   });
 };
 
@@ -528,7 +515,8 @@ SaveModal.prototype._save = function () {
       name = $('.yaja-save-modal-name').val();
   if (!name) return;
   if (app._getSavedProgram(name)) {
-    var overwrite = confirm("Program '" + name + "' already exists. Do you want to replace it?");
+    var overwrite = window.confirm("Program '" + name +
+        "' already exists. Do you want to replace it?");
     if (!overwrite) return;
   }
   app._saveProgram(name);

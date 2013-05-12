@@ -58,7 +58,6 @@ var QUEUE = 21;
 var NULL_INSTRUCTION = [NULL, 1, 0];
 
 function Interpreter() {
-  var self = this;
   this._buffer = [];
   this._bufferingMode = 'line-bufferred';
   this._out = {print: function () {}};
@@ -116,28 +115,28 @@ Interpreter.prototype.run = function (maxInstructions) {
           first,
           second;
       // Update current direction
-      if ((movement & INERTIA) == FORCE) {
+      if ((movement & INERTIA) === FORCE) {
         // Simple movement
         process.direction = direction;
         process.speed = speed;
-      } else if (movement != SAME) {
+      } else if (movement !== SAME) {
         var d = process.direction;
-        if (movement == REFLECT ||
-            (movement == SAME_V_REFLECT_H && (d == RIGHT || d == LEFT)) ||
-            (movement == REFLECT_V_SAME_H && (d == UP || d == DOWN))) {
+        if (movement === REFLECT ||
+            (movement === SAME_V_REFLECT_H && (d === RIGHT || d === LEFT)) ||
+            (movement === REFLECT_V_SAME_H && (d === UP || d === DOWN))) {
           process.direction = ~d & DIRECTION;
         }
       }
       // Check if current storage has enough values
       if (data.length < 2 &&
-          (arity == 2 || data.length < 1 && arity == 1)) {
+          (arity === 2 || data.length < 1 && arity === 1)) {
         commandCode = NULL;
         process.direction = ~process.direction & DIRECTION;
       }
       // Get values
       if (arity >= 1) {
-        if (commandCode != DUPLICATE) first = data.pop();
-        if (arity == 2) second = data.pop();
+        if (commandCode !== DUPLICATE) first = data.pop();
+        if (arity === 2) second = data.pop();
       }
       // Perform command
       switch (commandCode) {
@@ -149,9 +148,9 @@ Interpreter.prototype.run = function (maxInstructions) {
         case MODULO:   data.push(second % first); break;
         // Storage commands
         case POP:
-          if (argumentCode == INTEGER) {
+          if (argumentCode === INTEGER) {
             this._write(first);
-          } else if (argumentCode == CHARACTER) {
+          } else if (argumentCode === CHARACTER) {
             this._write(String.fromCharCode(first));
           } else {
             // Invalid argument; discard value
@@ -159,10 +158,10 @@ Interpreter.prototype.run = function (maxInstructions) {
           break;
         case PUSH:
           var value;
-          if (argumentCode == INTEGER) {
-            value = Math.floor(prompt('Enter an integer:'));
-          } else if (argumentCode == CHARACTER) {
-            value = prompt('Enter a character:').charCodeAt(0);
+          if (argumentCode === INTEGER) {
+            value = Math.floor(window.prompt('Enter an integer:'));
+          } else if (argumentCode === CHARACTER) {
+            value = window.prompt('Enter a character:').charCodeAt(0);
           } else {
             value = VALUES[argumentCode];
           }
@@ -186,7 +185,7 @@ Interpreter.prototype.run = function (maxInstructions) {
           data.push(second >= first ? 1 : 0);
           break;
         case DECIDE:
-          if (first == 0) process.direction = ~process.direction & DIRECTION;
+          if (first === 0) process.direction = ~process.direction & DIRECTION;
           break;
         case TERMINATE:
           process.terminated = true;
@@ -199,7 +198,7 @@ Interpreter.prototype.run = function (maxInstructions) {
       ++currentInstructionCount;
     }
     // Move to the next instruction
-    var inc = process.speed == ONE ? 1 : 2,
+    var inc = process.speed === ONE ? 1 : 2,
         width = row.length,
         height = process.height,
         x;
@@ -243,7 +242,7 @@ Interpreter.prototype._makeInstruction = function (charCode) {
 Interpreter.prototype._createStorage = function () {
   var storage = [];
   for (var i = 0; i < 28; ++i) {
-    storage[i] = i == QUEUE ? new yaja.Queue() : new yaja.Stack();
+    storage[i] = i === QUEUE ? new yaja.Queue() : new yaja.Stack();
   }
   return storage;
 };
@@ -252,11 +251,11 @@ Interpreter.prototype._write = function (c) {
   var bufferingMode = this._bufferingMode,
       buffer = this._buffer,
       out = this._out;
-  if (bufferingMode == 'unbuffered') {
+  if (bufferingMode === 'unbuffered') {
     out.print(c);
   } else {
     buffer.push(c);
-    if (bufferingMode == 'line-buffered' && c == '\n') this._flush();
+    if (bufferingMode === 'line-buffered' && c === '\n') this._flush();
   }
 };
 
