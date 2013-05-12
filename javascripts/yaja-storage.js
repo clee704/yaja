@@ -29,7 +29,7 @@ Queue.prototype.pop = function () {
   --this.length;
   var array = this._array,
       element = array[this._offset];
-  if ((++this._offset << 1) >= array.length) {
+  if ((++this._offset * 2) >= array.length) {
     this._array = array.slice(this._offset);
     this._offset = 0;
   }
