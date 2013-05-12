@@ -153,6 +153,7 @@ textarea[readonly] {
 }
 
 .yaja-label {
+  font-size: 0.85em;
   color: #666;
   position: absolute;
   display: block;
