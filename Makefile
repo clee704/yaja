@@ -23,7 +23,7 @@ public/favicon.ico: icon-16.png icon-32.png
 	$(converter) $^ $@
 	rm -f $^
 
-$(png_icons): public/images/icon.svg
+$(png_icons): public/img/icon.svg
 	$(converter) $(converter_input_flags) $^ $(converter_output_flags) -resize $(shell sed -E 's/.*-([0-9]+)\.png/\1x\1/' <<< $@) $@
 	$(optimizer) $@
 
