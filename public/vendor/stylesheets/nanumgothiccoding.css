@@ -5,9 +5,9 @@
   font-family: 'Nanum Gothic Coding';
   font-style: normal;
   font-weight: 400;
-  src: url(fonts/NanumGothicCoding-Regular.eot);
-  src: url(fonts/NanumGothicCoding-Regular.eot?#iefix) format('embedded-opentype'),
-       url(fonts/NanumGothicCoding-Regular.woff2) format('woff2'),
-       url(fonts/NanumGothicCoding-Regular.woff) format('woff'),
-       url(fonts/NanumGothicCoding-Regular.ttf) format('truetype');
+  src: url(../fonts/NanumGothicCoding-Regular.eot);
+  src: url(../fonts/NanumGothicCoding-Regular.eot?#iefix) format('embedded-opentype'),
+       url(../fonts/NanumGothicCoding-Regular.woff2) format('woff2'),
+       url(../fonts/NanumGothicCoding-Regular.woff) format('woff'),
+       url(../fonts/NanumGothicCoding-Regular.ttf) format('truetype');
 }
