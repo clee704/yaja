@@ -1,0 +1,13 @@
+/*
+ * Nanum Gothic Coding (Korean) http://www.google.com/webfonts/earlyaccess
+ */
+@font-face {
+  font-family: 'Nanum Gothic Coding';
+  font-style: normal;
+  font-weight: 400;
+  src: url(NanumGothicCoding-Regular.eot);
+  src: url(NanumGothicCoding-Regular.eot?#iefix) format('embedded-opentype'),
+       url(NanumGothicCoding-Regular.woff2) format('woff2'),
+       url(NanumGothicCoding-Regular.woff) format('woff'),
+       url(NanumGothicCoding-Regular.ttf) format('truetype');
+}
