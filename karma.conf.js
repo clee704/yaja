@@ -10,7 +10,7 @@ basePath = '';
 files = [
   JASMINE,
   JASMINE_ADAPTER,
-  'public/js/*.js',
+  'src/js/*.js',
   'specs/*.spec.js'
 ];
 
