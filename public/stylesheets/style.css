@@ -19,6 +19,7 @@ h1 {
 textarea, .CodeMirror {
   font-family: '나눔고딕코딩', 'Nanum Gothic Coding', '굴림체', 'GulimChe', monospace;
   font-size: 1em;
+  font-weight: normal;
   line-height: 18px;
   height: 100%;
 }
