@@ -1,5 +1,5 @@
 var yaja = typeof yaja === 'undefined' ? {} : yaja;
-(function (window, yaja, undefined) {
+(function (yaja, undefined) {
 "use strict";
 
 var Stack = Array;
@@ -58,4 +58,4 @@ Queue.prototype.duplicate = function () {
 yaja.Stack = Stack;
 yaja.Queue = Queue;
 
-})(window, yaja);
+})(yaja);
