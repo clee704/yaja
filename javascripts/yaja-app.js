@@ -1,4 +1,4 @@
-var yaja = typeof yaja === 'undefined' ? {} : yaja;
+window.yaja = typeof yaja === 'undefined' ? {} : yaja;
 (function (yaja, $, undefined) {
 "use strict";
 
