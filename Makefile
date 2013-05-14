@@ -39,5 +39,6 @@ $(png_icons): $(srcdir)/img/icon.svg
 
 clean:
 	rm -f $(icons)
+	rm -rf site
 
 .PHONY: build server init test karma icons clean
