@@ -1,4 +1,9 @@
 srcdir = src
+ifndef DEBUG
+	jekyll_config_files = config.yml
+else
+	jekyll_config_files = config.yml,config.development.yml
+endif
 icons = $(png_icons) $(srcdir)/favicon.ico
 png_icons = icon-16.png icon-32.png $(srcdir)/apple-touch-icon-114.png $(srcdir)/apple-touch-icon-144.png
 converter = convert
@@ -7,10 +12,10 @@ converter_output_flags = -format png -colors 256 -depth 8
 optimizer = optipng
 
 build:
-	jekyll build --config config.yml
+	jekyll build --config $(jekyll_config_files)
 
 server:
-	jekyll serve --watch --config config.yml,config.development.yml
+	jekyll serve --watch --config $(jekyll_config_files)
 
 init:
 	bundle
