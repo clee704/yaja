@@ -29,7 +29,7 @@ karma:
 
 icons: $(icons)
 
-src/favicon.ico: icon-16.png icon-32.png
+$(srcdir)/favicon.ico: icon-16.png icon-32.png
 	$(converter) $^ $@
 	rm -f $^
 
