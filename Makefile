@@ -6,11 +6,11 @@ converter_input_flags = -density 288 -background none
 converter_output_flags = -format png -colors 256 -depth 8
 optimizer = optipng
 
-jekyll:
-	jekyll
+build:
+	jekyll build --config config.yml
 
 server:
-	jekyll --server --auto
+	jekyll serve --watch --config config.yml,config.development.yml
 
 init:
 	bundle
@@ -35,4 +35,4 @@ $(png_icons): $(srcdir)/img/icon.svg
 clean:
 	rm -f $(icons)
 
-.PHONY: jekyll server init test karma icons clean
+.PHONY: build server init test karma icons clean

@@ -1,0 +1,3 @@
+asset_pipeline:
+  bundle: false
+  compress: false
