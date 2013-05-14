@@ -182,3 +182,8 @@ textarea[readonly] {
 .ui-layout-toggler {
   background-color: #999;
 }
+
+.ui-layout-north {
+  z-index: 100 !important;
+  overflow: visible;
+}
