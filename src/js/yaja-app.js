@@ -272,7 +272,7 @@ function AbstractEditor() {
 }
 
 AbstractEditor.prototype._updateCodeSize = function () {
-  var program = this.getValue(),
+  var program = this.getValue().replace(/\n*$/, ''),
       lines = program.split('\n'),
       chars = program.length - (lines.length - 1),
       height = chars === 0 ? 0 : lines.length,
