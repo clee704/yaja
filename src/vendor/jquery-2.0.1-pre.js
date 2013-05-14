@@ -1,5 +1,5 @@
 /*!
- * jQuery JavaScript Library v2.0.0
+ * jQuery JavaScript Library v2.0.1-pre
  * http://jquery.com/
  *
  * Includes Sizzle.js
@@ -9,7 +9,7 @@
  * Released under the MIT license
  * http://jquery.org/license
  *
- * Date: 2013-04-18
+ * Date: 2013-04-25
  */
 (function( window, undefined ) {
 
@@ -46,7 +46,7 @@ var
 	// List of deleted data cache ids, so we can reuse them
 	core_deletedIds = [],
 
-	core_version = "2.0.0",
+	core_version = "2.0.1-pre",
 
 	// Save a reference to some core methods
 	core_concat = core_deletedIds.concat,
@@ -865,14 +865,14 @@ function isArraylike( obj ) {
 // All jQuery objects should point back to these
 rootjQuery = jQuery(document);
 /*!
- * Sizzle CSS Selector Engine v1.9.2-pre
+ * Sizzle CSS Selector Engine v1.9.4-pre
  * http://sizzlejs.com/
  *
  * Copyright 2013 jQuery Foundation, Inc. and other contributors
  * Released under the MIT license
  * http://jquery.org/license
  *
- * Date: 2013-04-16
+ * Date: 2013-04-24
  */
 (function( window, undefined ) {
 
@@ -911,7 +911,8 @@ var i,
 	strundefined = typeof undefined,
 	MAX_NEGATIVE = 1 << 31,
 
-	// Array methods
+	// Instance methods
+	hasOwn = support.hasOwnProperty,
 	arr = [],
 	pop = arr.pop,
 	push_native = arr.push,
@@ -976,7 +977,7 @@ var i,
 		"CHILD": new RegExp( "^:(only|first|last|nth|nth-last)-(child|of-type)(?:\\(" + whitespace +
 			"*(even|odd|(([+-]|)(\\d*)n|)" + whitespace + "*(?:([+-]|)" + whitespace +
 			"*(\\d+)|))" + whitespace + "*\\)|)", "i" ),
-		"boolean": new RegExp( "^(?:" + booleans + ")$", "i" ),
+		"bool": new RegExp( "^(?:" + booleans + ")$", "i" ),
 		// For use in libraries implementing .is()
 		// We use this for POS matching in `select`
 		"needsContext": new RegExp( "^" + whitespace + "*[>+~]|:(even|odd|eq|gt|lt|nth|first|last)(?:\\(" +
@@ -1088,6 +1089,7 @@ function assert( fn ) {
 		if ( div.parentNode ) {
 			div.parentNode.removeChild( div );
 		}
+
 		// release memory in IE
 		div = null;
 	}
@@ -1597,7 +1599,10 @@ Sizzle.attr = function( elem, name ) {
 	}
 
 	var fn = Expr.attrHandle[ name.toLowerCase() ],
-		val = fn && fn( elem, name, !documentIsHTML );
+		// Don't get fooled by Object.prototype properties (jQuery #13807)
+		val = fn && ( hasOwn.call( Expr.attrHandle, name.toLowerCase() ) ?
+			fn( elem, name, !documentIsHTML ) :
+			undefined );
 
 	return val === undefined ?
 		support.attributes || !documentIsHTML ?
@@ -3336,13 +3341,9 @@ Data.prototype = {
 
 		// Handle: [ owner, { properties } ] args
 		} else {
-			// Support an expectation from the old data system where plain
-			// objects used to initialize would be set to the cache by
-			// reference, instead of having properties and values copied.
-			// Note, this will kill the connection between
-			// "this.cache[ unlock ]" and "cache"
+			// Fresh assignments by object are shallow copied
 			if ( jQuery.isEmptyObject( cache ) ) {
-				this.cache[ unlock ] = data;
+				jQuery.extend( this.cache[ unlock ], data );
 			// Otherwise, copy the properties one-by-one to the cache object
 			} else {
 				for ( prop in data ) {
@@ -3350,6 +3351,7 @@ Data.prototype = {
 				}
 			}
 		}
+		return cache;
 	},
 	get: function( owner, key ) {
 		// Either a valid cache is found, or will be created.
@@ -4048,7 +4050,7 @@ jQuery.extend({
 		if ( nType !== 1 || !jQuery.isXMLDoc( elem ) ) {
 			name = name.toLowerCase();
 			hooks = jQuery.attrHooks[ name ] ||
-				( jQuery.expr.match.boolean.test( name ) ? boolHook : nodeHook );
+				( jQuery.expr.match.bool.test( name ) ? boolHook : nodeHook );
 		}
 
 		if ( value !== undefined ) {
@@ -4087,7 +4089,7 @@ jQuery.extend({
 				propName = jQuery.propFix[ name ] || name;
 
 				// Boolean attributes get special treatment (#10870)
-				if ( jQuery.expr.match.boolean.test( name ) ) {
+				if ( jQuery.expr.match.bool.test( name ) ) {
 					// Set corresponding property to false
 					elem[ propName ] = false;
 				}
@@ -4171,7 +4173,7 @@ boolHook = {
 		return name;
 	}
 };
-jQuery.each( jQuery.expr.match.boolean.source.match( /\w+/g ), function( i, name ) {
+jQuery.each( jQuery.expr.match.bool.source.match( /\w+/g ), function( i, name ) {
 	var getter = jQuery.expr.attrHandle[ name ] || jQuery.find.attr;
 
 	jQuery.expr.attrHandle[ name ] = function( elem, name, isXML ) {
@@ -5074,13 +5076,14 @@ var isSimple = /^.[^:#\[\.,]*$/,
 
 jQuery.fn.extend({
 	find: function( selector ) {
-		var self, matched, i,
-			l = this.length;
+		var i,
+			ret = [],
+			self = this,
+			len = self.length;
 
 		if ( typeof selector !== "string" ) {
-			self = this;
 			return this.pushStack( jQuery( selector ).filter(function() {
-				for ( i = 0; i < l; i++ ) {
+				for ( i = 0; i < len; i++ ) {
 					if ( jQuery.contains( self[ i ], this ) ) {
 						return true;
 					}
@@ -5088,15 +5091,14 @@ jQuery.fn.extend({
 			}) );
 		}
 
-		matched = [];
-		for ( i = 0; i < l; i++ ) {
-			jQuery.find( selector, this[ i ], matched );
+		for ( i = 0; i < len; i++ ) {
+			jQuery.find( selector, self[ i ], ret );
 		}
 
 		// Needed because $( selector, context ) becomes $( context ).find( selector )
-		matched = this.pushStack( l > 1 ? jQuery.unique( matched ) : matched );
-		matched.selector = ( this.selector ? this.selector + " " : "" ) + selector;
-		return matched;
+		ret = this.pushStack( len > 1 ? jQuery.unique( ret ) : ret );
+		ret.selector = this.selector ? this.selector + " " + selector : selector;
+		return ret;
 	},
 
 	has: function( target ) {
@@ -5122,14 +5124,16 @@ jQuery.fn.extend({
 	},
 
 	is: function( selector ) {
-		return !!selector && (
-			typeof selector === "string" ?
-				// If this is a positional/relative selector, check membership in the returned set
-				// so $("p:first").is("p:last") won't return true for a doc with two "p".
-				rneedsContext.test( selector ) ?
-					jQuery( selector, this.context ).index( this[ 0 ] ) >= 0 :
-					jQuery.filter( selector, this ).length > 0 :
-				this.filter( selector ).length > 0 );
+		return !!winnow(
+			this,
+
+			// If this is a positional/relative selector, check membership in the returned set
+			// so $("p:first").is("p:last") won't return true for a doc with two "p".
+			typeof selector === "string" && rneedsContext.test( selector ) ?
+				jQuery( selector ) :
+				selector || [],
+			false
+		).length;
 	},
 
 	closest: function( selectors, context ) {
@@ -5263,7 +5267,7 @@ jQuery.each({
 			}
 
 			// Reverse order for parents* and prev*
-			if ( name[ 0 ] === "p" ) {
+			if ( name[ 0 ] === "p" && name !== "parent" ) {
 				matched.reverse();
 			}
 		}
@@ -5362,6 +5366,7 @@ var rxhtmlTag = /<(?!area|br|col|embed|hr|img|input|link|meta|param)(([\w:]+)[^>
 		option: [ 1, "<select multiple='multiple'>", "</select>" ],
 
 		thead: [ 1, "<table>", "</table>" ],
+		col: [ 2, "<table><colgroup>", "</colgroup></table>" ],
 		tr: [ 2, "<table><tbody>", "</tbody></table>" ],
 		td: [ 3, "<table><tbody><tr>", "</tr></tbody></table>" ],
 
@@ -5371,7 +5376,7 @@ var rxhtmlTag = /<(?!area|br|col|embed|hr|img|input|link|meta|param)(([\w:]+)[^>
 // Support: IE 9
 wrapMap.optgroup = wrapMap.option;
 
-wrapMap.tbody = wrapMap.tfoot = wrapMap.colgroup = wrapMap.caption = wrapMap.col = wrapMap.thead;
+wrapMap.tbody = wrapMap.tfoot = wrapMap.colgroup = wrapMap.caption = wrapMap.thead;
 wrapMap.th = wrapMap.td;
 
 jQuery.fn.extend({
@@ -5519,6 +5524,10 @@ jQuery.fn.extend({
 				parent = args[ i++ ];
 
 			if ( parent ) {
+				// Don't use the snapshot next if it has moved (#13810)
+				if ( next && next.parentNode !== parent ) {
+					next = this.nextSibling;
+				}
 				jQuery( this ).remove();
 				parent.insertBefore( elem, next );
 			}
@@ -5868,10 +5877,8 @@ function cloneCopyEvent( src, dest ) {
 	// 1. Copy private data: events, handlers, etc.
 	if ( data_priv.hasData( src ) ) {
 		pdataOld = data_priv.access( src );
-		pdataCur = jQuery.extend( {}, pdataOld );
+		pdataCur = data_priv.set( dest, pdataOld );
 		events = pdataOld.events;
-
-		data_priv.set( dest, pdataCur );
 
 		if ( events ) {
 			delete pdataCur.handle;

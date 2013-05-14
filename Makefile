@@ -6,10 +6,14 @@ converter_input_flags = -density 288 -background none
 converter_output_flags = -format png -colors 256 -depth 8
 optimizer = optipng
 
+jekyll:
+	jekyll
+
 server:
-	cd public && python -m SimpleHTTPServer
+	jekyll --server --auto
 
 init:
+	bundle
 	npm install -g karma
 
 test:
@@ -31,4 +35,4 @@ $(png_icons): $(srcdir)/img/icon.svg
 clean:
 	rm -f $(icons)
 
-.PHONY: server init test karma icons clean
+.PHONY: jekyll server init test karma icons clean

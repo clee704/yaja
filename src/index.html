@@ -1,3 +1,5 @@
+---
+---
 <!DOCTYPE html>
 <html>
 <head>
@@ -6,12 +8,14 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Yaja">
   <title>Yaja: Aheui Interpreter</title>
-  <link href="vendor/bootstrap/css/bootstrap.css" rel="stylesheet">
-  <link href="vendor/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
-  <link href="vendor/font-awesome/css/font-awesome.css" rel="stylesheet">
-  <link href="vendor/google-fonts/nanumgothiccoding.css" rel="stylesheet">
-  <link href="vendor/codemirror/codemirror.css" rel="stylesheet">
-  <link href="css/style.css" rel="stylesheet">
+  {% css_asset_tag style %}
+    - /vendor/bootstrap/css/bootstrap.css
+    - /vendor/bootstrap/css/bootstrap-responsive.css
+    - /vendor/font-awesome/css/font-awesome.css
+    - /vendor/google-fonts/nanumgothiccoding.css
+    - /vendor/codemirror/codemirror.css
+    - /css/style.css
+  {% endcss_asset_tag %}
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="apple-touch-icon-precomposed" sizes="57x57" href="/apple-touch-icon-114.png" />
   <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/apple-touch-icon-114.png" />
@@ -123,18 +127,20 @@
       </button>
     </div>
   </div>
-  <script src="vendor/jquery-2.0.0.js"></script>
-  <script src="vendor/bootstrap/js/bootstrap.js"></script>
-  <script src="vendor/jquery-ui-1.10.3.custom.js"></script>
-  <script src="vendor/jquery.ui.touch-punch.js"></script>
-  <script src="vendor/jquery.layout-latest.js"></script>
-  <script src="vendor/jquery.hotkeys.js"></script>
-  <script src="vendor/codemirror/codemirror.js"></script>
-  <script src="vendor/modernizr.custom.js"></script>
-  <script src="vendor/iOS.js"></script>
-  <script src="js/yaja-storage.js"></script>
-  <script src="js/yaja-interpreter.js"></script>
-  <script src="js/yaja-app.js"></script>
+  {% javascript_asset_tag script %}
+    - /vendor/jquery-2.0.1-pre.js
+    - /vendor/bootstrap/js/bootstrap.js
+    - /vendor/jquery-ui-1.10.3.custom.js
+    - /vendor/jquery.ui.touch-punch.js
+    - /vendor/jquery.layout-latest.js
+    - /vendor/jquery.hotkeys.js
+    - /vendor/codemirror/codemirror.js
+    - /vendor/modernizr.custom.js
+    - /vendor/iOS.js
+    - /js/yaja-storage.js
+    - /js/yaja-interpreter.js
+    - /js/yaja-app.js
+  {% endjavascript_asset_tag %}
   <script>
     var app;  // Expose app to the global scope for debugging
     $(function () {
