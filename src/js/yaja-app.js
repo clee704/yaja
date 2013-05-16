@@ -2,7 +2,8 @@ window.yaja = typeof yaja === 'undefined' ? {} : yaja;
 (function (yaja, $, undefined) {
 "use strict";
 
-var iOS = !!navigator.userAgent.match(/(iPad|iPhone|iPod)/);
+var iOS = !!navigator.userAgent.match(/(iPad|iPhone|iPod)/),
+    Mac = !!navigator.userAgent.match(/Macintosh/);
 
 var storage = new (function Storage(prefix) {
   this._prefix = prefix;
@@ -52,13 +53,22 @@ var FileManager = {
 function App(config) {
   this.config = $.extend({
     "shortcuts": {
-      "run": "Ctrl+Return",
-      "pause": "Ctrl+P",
-      "reset": "Ctrl+R",
-      "new_file": "Ctrl+N",
-      "open": "Ctrl+O",
-      "save": "Ctrl+S",
-      "save_as": "Ctrl+Shift+S"
+      "mac": {
+        "run": "command+return",
+        "pause": "command+p",
+        "reset": "command+r",
+        "open": "command+o",
+        "save": "command+s",
+        "save_as": "command+shift+s"
+      },
+      "others": {
+        "run": "ctrl+return",
+        "pause": "ctrl+p",
+        "reset": "ctrl+r",
+        "open": "ctrl+o",
+        "save": "ctrl+s",
+        "save_as": "ctrl+shift+s"
+      }
     }
   }, config);
   this._originalTitle = document.title;
@@ -96,7 +106,7 @@ App.prototype._bindActionListeners = function () {
   var self = this,
       actions = ['run', 'pause', 'reset',
                  'new_file', 'open', 'save', 'save_as'],
-      shortcuts = this.config.shortcuts;
+      shortcuts = this.config.shortcuts[Mac ? 'mac' : 'others'];
   for (var i = 0; i < actions.length; ++i) {
     var action = actions[i],
         button = $('.yaja-' + action),
