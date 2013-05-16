@@ -123,8 +123,7 @@ App.prototype._bindActionListeners = function () {
       button.attr('title', function () {
         return $(this).text().trim() + ' [' + shortcut + ']';
       });
-      $(window).add('textarea').bind('keydown',
-          shortcut.replace('Cmd', 'Meta'), callback);
+      Mousetrap.bindGlobal(shortcut, callback);
     }
   }
 };
