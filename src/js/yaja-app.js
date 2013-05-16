@@ -163,7 +163,7 @@ App.prototype._configureLayout = function () {
 App.prototype._restoreSavedSession = function () {
   this._openFile(storage.getItem('current_file'));
   this._loadProgram(storage.getItem('editor_value'));
-  this._programChanged(storage.getItem('dirty') === 'true');
+  this._programChanged(storage.getItem('dirty') !== null);
 }
 
 App.prototype.run = function () {
@@ -279,8 +279,16 @@ App.prototype._programChanged = function (dirty) {
   var self = this;
   this._autosaveTimer = setTimeout(function () {
     storage.setItem('editor_value', self._editor.getValue());
-    storage.setItem('current_file', self._currentFile);
-    storage.setItem('dirty', self._dirty);
+    if (self._currentFile) {
+      storage.setItem('current_file', self._currentFile);
+    } else {
+      storage.removeItem('current_file');
+    }
+    if (self._dirty) {
+      storage.setItem('dirty', 'true');
+    } else {
+      storage.removeItem('dirty');
+    }
   }, 3000);
 };
 
