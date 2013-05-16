@@ -2,7 +2,7 @@ window.yaja = typeof yaja === 'undefined' ? {} : yaja;
 (function (yaja, $, undefined) {
 "use strict";
 
-var iOS = (navigator.userAgent.match(/(iPad|iPhone|iPod)/g) ? true : false);
+var iOS = !!navigator.userAgent.match(/(iPad|iPhone|iPod)/);
 
 var storage = new (function Storage(prefix) {
   this._prefix = prefix;
@@ -51,26 +51,32 @@ var FileManager = {
 
 function App(config) {
   this.config = $.extend({
-    // Define default config values here.
     "shortcuts": {
       "run": "Ctrl+Return",
       "pause": "Ctrl+P",
       "reset": "Ctrl+R",
+      "new_file": "Ctrl+N",
       "open": "Ctrl+O",
-      "save": "Ctrl+S"
+      "save": "Ctrl+S",
+      "save_as": "Ctrl+Shift+S"
     }
   }, config);
+  this._originalTitle = document.title;
   this._initObjects();
   this._bindActionListeners();
   this._configureLayout();
   this._setInterpreterStatus('Idle');
-  this._startAutosaveLoop();
-  this._loadAutosavedProgram();
+  this._restoreSavedSession();
 }
 
 App.prototype._initObjects = function () {
+  var self = this;
+  this._$programSize = $('.yaja-program-size');
   // CodeMirror doesn't work well with Korean keyboard (Hangul) on iPhone.
   this._editor = iOS ? new TextAreaEditor() : new CodeMirrorEditor();
+  this._editor.onChange(function () {
+    self._programChanged(true);
+  });
   var output = this._output = $('.yaja-output')[0];
   this._out = {
     print: function (str) {
@@ -88,10 +94,12 @@ App.prototype._initObjects = function () {
 
 App.prototype._bindActionListeners = function () {
   var self = this,
-      shortcuts = this.config.shortcuts,
-      actions = ['run', 'pause', 'reset', 'open', 'save'];
+      actions = ['run', 'pause', 'reset',
+                 'new_file', 'open', 'save', 'save_as'],
+      shortcuts = this.config.shortcuts;
   for (var i = 0; i < actions.length; ++i) {
     var action = actions[i],
+        button = $('.yaja-' + action),
         callback = (function () {
           var methodName = action;
           return function () {
@@ -99,13 +107,14 @@ App.prototype._bindActionListeners = function () {
             return false;
           };
         })(),
-        button = $('.yaja-' + action).click(callback),
         shortcut = shortcuts[action];
+    button.click(callback);
     if (shortcut) {
       button.attr('title', function () {
         return $(this).text().trim() + ' [' + shortcut + ']';
       });
-      $(window).add('textarea').bind('keydown', shortcut, callback);
+      $(window).add('textarea').bind('keydown',
+          shortcut.replace('Cmd', 'Meta'), callback);
     }
   }
 };
@@ -141,12 +150,18 @@ App.prototype._configureLayout = function () {
   }
 };
 
+App.prototype._restoreSavedSession = function () {
+  this._openFile(storage.getItem('current_file'));
+  this._loadProgram(storage.getItem('editor_value'));
+  this._programChanged(storage.getItem('dirty') === 'true');
+}
+
 App.prototype.run = function () {
   var status = this._getInterpreterStatus();
   if (status === 'Running') return;
   this._setInterpreterStatus('Running');
   if (status !== 'Paused') {
-    this.clearOutput();
+    this._clearOutput();
     this._interpreter.setProgram(this._editor.getValue());
   }
   this._startInterpreterLoop();
@@ -163,10 +178,10 @@ App.prototype.reset = function () {
   if (this._getInterpreterStatus() === 'Reset') return;
   this._setInterpreterStatus('Reset');
   this._stopInterpreterLoop();
-  this.clearOutput();
+  this._clearOutput();
 };
 
-App.prototype.clearOutput = function () {
+App.prototype._clearOutput = function () {
   this._output.value = '';
 };
 
@@ -197,46 +212,79 @@ App.prototype._getInterpreterStatus = function () {
 
 App.prototype._setInterpreterStatus = function (status) {
   this._status = status;
-  $('.yaja-status').text(status);
+  $('.yaja-interpreter-status').text(status);
+};
+
+App.prototype.new_file = function () {
+  if (!this._confirmDiscardChanges()) return;
+  this._currentFile = null;
+  this._loadProgram('');
 };
 
 App.prototype.open = function () {
+  if (!this._confirmDiscardChanges()) return;
   this._openModal.open();
 };
 
 App.prototype.save = function () {
+  if (this._currentFile) {
+    this._saveCurrentProgramAs(this._currentFile);
+  } else {
+    this._saveModal.open();
+  }
+};
+
+App.prototype.save_as = function () {
   this._saveModal.open();
 };
 
-App.prototype._startAutosaveLoop = function () {
-  var self = this;
-  this._autosaveLoopId = setInterval(function () {
-    var autosavedProgram = storage.getItem('autosave'),
-        currentProgram = self._editor.getValue();
-    if (currentProgram === autosavedProgram) return;
-    storage.setItem('autosave', currentProgram);
-    $('.yaja-autosave-status').text('Autosaved')
-        .hide().fadeIn(200).delay(2000).fadeOut(400);
-  }, 10000);
+App.prototype._confirmDiscardChanges = function () {
+  if (!this._dirty) return true;
+  return window.confirm('Do you want to discard changes you made?');
+}
+
+App.prototype._openFile = function (filename) {
+  this._currentFile = filename;
+  this._loadProgram(FileManager.read(filename));
 };
 
-App.prototype._loadAutosavedProgram = function () {
-  if (this._editor.getValue() !== '') return;
-  this._loadProgram(storage.getItem('autosave'));
-};
-
-App.prototype._loadProgram = function(program) {
+App.prototype._loadProgram = function (program) {
   if (program === null) return;
   this.reset();
   this._editor.setValue(program);
+  this._programChanged(false);
 };
 
-function AbstractEditor() {
-  this._$codeSize = $('.yaja-code-size');
+App.prototype._saveCurrentProgramAs = function (filename) {
+  this._currentFile = filename;
+  FileManager.write(filename, this._editor.getValue());
+  this._programChanged(false);
 }
 
-AbstractEditor.prototype._updateCodeSize = function () {
-  var program = this.getValue().replace(/\n*$/, ''),
+App.prototype._programChanged = function (dirty) {
+  this._dirty = dirty;
+  this._updateTitle();
+  this._updateCodeSize();
+  clearTimeout(this._autosaveTimer);
+  var self = this;
+  this._autosaveTimer = setTimeout(function () {
+    storage.setItem('editor_value', self._editor.getValue());
+    storage.setItem('current_file', self._currentFile);
+    storage.setItem('dirty', self._dirty);
+  }, 3000);
+};
+
+App.prototype._updateTitle = function () {
+  if (!this._currentFile) {
+    document.title = this._originalTitle;
+  } else {
+    document.title = (this._dirty ? '*' : '') + this._currentFile + ' - ' +
+        this._originalTitle;
+  }
+};
+
+App.prototype._updateCodeSize = function () {
+  var program = this._editor.getValue().replace(/\n*$/, ''),
       lines = program.split('\n'),
       chars = program.length - (lines.length - 1),
       height = chars === 0 ? 0 : lines.length,
@@ -244,23 +292,15 @@ AbstractEditor.prototype._updateCodeSize = function () {
   for (var i = 0; i < height; ++i) {
     if (lines[i].length > width) width = lines[i].length;
   }
-  this._$codeSize.text(width + 'x' + height + ', ' + chars + ' characters');
+  this._$programSize.text(width + 'x' + height + ', ' + chars + ' characters');
 };
 
 function TextAreaEditor() {
   this._input = $('.yaja-input')[0];
   this._$input = $(this._input);
-  $('.yaja-separator-code-size-ruler').remove();
+  $('.yaja-separator-program-size-ruler').remove();
   this._bindListeners();
-  this._updateCodeSize();
 }
-TextAreaEditor.prototype = new AbstractEditor();
-TextAreaEditor.prototype.constructor = TextAreaEditor;
-
-TextAreaEditor.prototype._bindListeners = function () {
-  var self = this;
-  this._$input.change(function () { self._updateCodeSize(); });
-};
 
 TextAreaEditor.prototype.getValue = function () {
   return this._input.value;
@@ -269,11 +309,15 @@ TextAreaEditor.prototype.getValue = function () {
 TextAreaEditor.prototype.setValue = function (value) {
   this._input.value = value;
   // textarea doesn't fire change event when value is set programmatically
-  this._updateCodeSize();
+  this._$input.change();
 };
 
 TextAreaEditor.prototype.focus = function () {
   this._$input.focus();
+};
+
+TextAreaEditor.prototype.onChange = function (callback) {
+  this._$input.change(callback);
 };
 
 function CodeMirrorEditor() {
@@ -286,10 +330,7 @@ function CodeMirrorEditor() {
   this._$ruler = $('.yaja-ruler');
   this._bindListeners();
   this._updateRuler();
-  this._updateCodeSize();
 }
-CodeMirrorEditor.prototype = new AbstractEditor();
-CodeMirrorEditor.prototype.constructor = CodeMirrorEditor;
 
 CodeMirrorEditor.prototype._bindListeners = function () {
   var self = this;
@@ -300,7 +341,6 @@ CodeMirrorEditor.prototype._bindListeners = function () {
     changeObj.update(undefined, undefined, text);
   });
   this._cm.on('cursorActivity', function () { self._updateRuler(); });
-  this._cm.on('change', function () { self._updateCodeSize(); });
 };
 
 CodeMirrorEditor.prototype.getValue = function () {
@@ -313,6 +353,10 @@ CodeMirrorEditor.prototype.setValue = function (value) {
 
 CodeMirrorEditor.prototype.focus = function () {
   this._cm.focus();
+};
+
+CodeMirrorEditor.prototype.onChange = function (callback) {
+  this._cm.on('change', callback);
 };
 
 CodeMirrorEditor.prototype._updateRuler = function () {
@@ -408,11 +452,11 @@ OpenModal.prototype._updateData = function () {
       data = [];
   filenames.sort();
   for (var i = 0; i < filenames.length; ++i) {
-    var name = filenames[i],
+    var filename = filenames[i],
         row = {
           index: i,
-          programName: name,
-          programSummary: FileManager.read(name).substr(0, 80)
+          filename: filename,
+          summary: FileManager.read(filename).substr(0, 80)
         };
     data.push(row);
   }
@@ -432,8 +476,8 @@ OpenModal.prototype._updateTable = function () {
       var row = data[i],
           tr = $('<tr></tr>').data('index', i);
       row.tr = tr;
-      $('<td class="name">' + row.programName + '</td>').appendTo(tr);
-      $('<td><code>' + row.programSummary + '</code></td>').appendTo(tr);
+      $('<td class="name">' + row.filename + '</td>').appendTo(tr);
+      $('<td><code>' + row.summary + '</code></td>').appendTo(tr);
       tr.appendTo(tbody);
     }
   }
@@ -464,13 +508,14 @@ OpenModal.prototype._getSelectedIndex = function () {
 
 OpenModal.prototype._openProgram = function () {
   if (!this._selectedRow) return;
-  this._app._loadProgram(FileManager.read(this._selectedRow.programName));
+  this._app._openFile(this._selectedRow.filename);
   this.close();
 };
 
 OpenModal.prototype._removeProgram = function () {
   if (!this._selectedRow) return;
-  FileManager.remove(this._selectedRow.programName);
+  var filename = this._selectedRow.filename;
+  FileManager.remove(filename);
   this._data.splice(this._selectedRow.index, 1);
   for (var i = this._selectedRow.index; i < this._data.length; ++i) {
     var row = this._data[i];
@@ -480,6 +525,9 @@ OpenModal.prototype._removeProgram = function () {
   this._selectedRow.tr.remove();
   this._selectedRow = null;
   if (this._data.length === 0) this._addEmptyRow();
+  if (this._app._currentFile === filename) {
+    this._app._programChanged(true);
+  }
 };
 
 function SaveModal(app) {
@@ -528,7 +576,7 @@ SaveModal.prototype._save = function () {
         "' already exists. Do you want to replace it?");
     if (!overwrite) return;
   }
-  FileManager.write(filename, this._app._editor.getValue());
+  this._app._saveCurrentProgramAs(filename);
   this.close();
 };
 
