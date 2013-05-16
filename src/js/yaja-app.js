@@ -432,6 +432,7 @@ OpenModal.prototype._bindListeners = function () {
           self._selectRow(i === null ? n - 1 : i > 0 ? i - 1 : n - 1);
           return false;
         case KEY_CODE.DELETE:
+        case KEY_CODE.BACKSPACE:
           self._removeProgram();
           self._selectRow(Math.min(i, n - 2));
           return false;
