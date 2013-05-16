@@ -385,18 +385,13 @@ CodeMirrorEditor.prototype._updateRuler = function () {
 
 var KEY_CODE = {
   BACKSPACE: 8,
-  TAB: 9,
   RETURN: 13,
-  PAUSE_BREAK: 19,
-  CAPS_LOCK: 20,
   ESCAPE: 27,
   LEFT_ARROW: 37,
   UP_ARROW: 38,
   RIGHT_ARROW: 39,
   DOWN_ARROW: 40,
-  DELETE: 46,
-  SCROLL_LOCK: 145,
-  IME: 229
+  DELETE: 46
 };
 
 function OpenModal(app) {
