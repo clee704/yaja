@@ -112,9 +112,9 @@ App.prototype._bindActionListeners = function () {
         button = $('.yaja-' + action),
         callback = (function () {
           var methodName = action;
-          return function () {
+          return function (e) {
             self[methodName]();
-            return false;
+            if (e.type !== 'click') return false;
           };
         })(),
         shortcut = shortcuts[action];

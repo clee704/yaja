@@ -65,6 +65,10 @@ textarea[readonly] {
   }
 }
 
+.dropdown-menu a {
+  cursor: pointer;
+}
+
 .yaja-controls, .yaja-status-bar {
   color: white;
 }
