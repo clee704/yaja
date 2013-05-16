@@ -407,8 +407,8 @@ function OpenModal(app) {
 
 OpenModal.prototype._bindListeners = function () {
   var self = this;
-  $('.yaja-open-modal-open').click(function () { self._openProgram(); });
-  $('.yaja-open-modal-delete').click(function () { self._removeProgram(); });
+  $('.yaja-open-modal-open').click(function () { self._openFile(); });
+  $('.yaja-open-modal-delete').click(function () { self._removeFile(); });
   this._modal.bind({
     hidden: function () {
       self._app._editor.focus();
@@ -428,11 +428,11 @@ OpenModal.prototype._bindListeners = function () {
           return false;
         case KEY_CODE.DELETE:
         case KEY_CODE.BACKSPACE:
-          self._removeProgram();
+          self._removeFile();
           self._selectRow(Math.min(i, n - 2));
           return false;
         case KEY_CODE.RETURN:
-          self._openProgram();
+          self._openFile();
           return false;
         case KEY_CODE.ESCAPE:
           self.close();
@@ -446,7 +446,7 @@ OpenModal.prototype._bindListeners = function () {
     self._selectRow($(this).data('index'));
   }).on('dblclick', 'tr', function () {
     self._selectRow($(this).data('index'));
-    self._openProgram();
+    self._openFile();
   });
 };
 
@@ -520,13 +520,13 @@ OpenModal.prototype._getSelectedIndex = function () {
   return this._selectedRow ? this._selectedRow.index : null;
 };
 
-OpenModal.prototype._openProgram = function () {
+OpenModal.prototype._openFile = function () {
   if (!this._selectedRow) return;
   this._app._openFile(this._selectedRow.filename);
   this.close();
 };
 
-OpenModal.prototype._removeProgram = function () {
+OpenModal.prototype._removeFile = function () {
   if (!this._selectedRow) return;
   var filename = this._selectedRow.filename;
   FileManager.remove(filename);
