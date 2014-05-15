@@ -71,21 +71,26 @@
           <i class="icon icon-repeat icon-white"></i>
           <span class="text">Reset</span>
         </button>
-        <button class="btn btn-primary yaja-step">
-          <i class="icon icon-arrow-right icon-white"></i>
-          <span class="text">Step</span>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-inverse yaja-debug" onclick="alert('Not implemented yet')">
+          <i class="icon icon-search icon-white"></i>
+          <span class="text">Debug</span>
         </button>
       </div>
     </div>
   </div>
   <div class="ui-layout-center">
-    <div class="ui-layout-upper-center yaja-pane">
+    <div class="ui-layout-center-center yaja-pane">
       <span class="yaja-label">Code</span>
       <textarea class="yaja-input" rows="12" wrap="off"></textarea>
     </div>
-    <div class="ui-layout-lower-center yaja-pane">
+    <div class="ui-layout-center-south yaja-pane">
       <span class="yaja-label">Output</span>
       <textarea class="yaja-output" rows="12" readonly wrap="off"></textarea>
+    </div>
+    <div class="ui-layout-center-east yaja-pane">
+      debug pane
     </div>
   </div>
   <div class="ui-layout-south">

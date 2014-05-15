@@ -140,13 +140,19 @@ App.prototype._configureLayout = function () {
           spacing_open: Modernizr.touch ? 12 : 6,
           spacing_closed: Modernizr.touch ? 12 : 6,
           center: {
-            paneSelector: ".ui-layout-upper-center",
+            paneSelector: ".ui-layout-center-center",
             minSize: 100
           },
           south: {
-            paneSelector: ".ui-layout-lower-center",
+            paneSelector: ".ui-layout-center-south",
             size: 200,
             minSize: 100
+          },
+          east: {
+            paneSelector: ".ui-layout-center-east",
+            size: 250,
+            minSize: 100,
+            initClosed: true
           }
         }
       }

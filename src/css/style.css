@@ -155,6 +155,7 @@ textarea[readonly] {
 
 .yaja-pane {
   position: relative;
+  background-color: white;
 }
 
 .yaja-label {
