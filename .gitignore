@@ -1,3 +1,4 @@
 icon-16.png
 icon-32.png
-site
+/site
+*.log
