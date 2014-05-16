@@ -322,7 +322,7 @@ function TextAreaEditor() {
   this._input = $('.yaja-input')[0];
   this._$input = $(this._input);
   $('.yaja-separator-program-size-ruler').remove();
-  this._bindListeners();
+  // this._bindListeners();
 }
 
 TextAreaEditor.prototype.getValue = function () {
